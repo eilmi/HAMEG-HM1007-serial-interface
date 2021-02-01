@@ -2,6 +2,11 @@
 ## Introduction
 This repository contains all the needed code to get the data from a HAMEG HM1007 oscilloscope. The core of this interface is an Arduino Nano which is used to communicate with the oscilloscope via it's HO79-4 interface.
 
+## Flashing the Arduino
+Alttough the code for the microcontroller was written in *PlatformIO* copying the content of **PlatformIO/src/main.cpp** into an instance of the *Arduino IDE* is also possible.
+
+Due to the usage of the same processor for the Arduino Uno and Nano it is also possible to compile and upload the program to both of these two boards without any modification to the code. 
+
 ## How it works
 ### normal operation mode
 Sending a 'R' to the serial port opened by the Arduino starts the data read-out process, which is described in more detail below.
@@ -23,3 +28,4 @@ TODO
 - Only transmits valid data (signal must be shown on oscilloscope's screen)
 
 ## Create a CSV file with the provided Python code
+TODO
