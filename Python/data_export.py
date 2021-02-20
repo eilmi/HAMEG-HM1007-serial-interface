@@ -29,8 +29,7 @@ while 1:
     else:
         data.append(inp)
 
-
-ser.close()
+ser.close()# close serial 
 
 #get starting position of all 4 2048 byte long data blocks
 begin_CH1=data.index("CH1")
@@ -74,20 +73,22 @@ else: #CH2 data invalid
 filename =now.strftime("HM1007_data-%Y_%m_%d-%H_%M_%S.csv")
 testframe.to_csv(filename,index=False,header=True)
 
-# # Plot data with matplotlib
-# fig, ax = plt.subplots()
-# ax.plot(ch1_data)
-# ax.plot(ch2_data)
-# ax.plot(ref1_data)
-# ax.plot(ref2_data)
+# Plot data with matplotlib
+fig, ax = plt.subplots()
 
-# # XY-Plot
-# #ax.plot(ch2_data,ch1_data)
+if "XY-Plot" in data:
+    ax.plot(ch2_data,ch1_data)
+else:
+    ax.plot(ch1_data)
+    ax.plot(ch2_data)
+    ax.plot(ref1_data)
+    ax.plot(ref2_data)
 
-# ax.set(xlabel='time', ylabel='Volts',
-#        title='Data from Hameg HM1007')
-# ax.grid()
-# ax.set_xlim(0, 2047)
-# ax.set_ylim(0,255)
-# fig.savefig("test.png")
+ax.set(xlabel='time', ylabel='value',
+       title='Data from Hameg HM1007')
+ax.grid()
+ax.set_xlim(0, 2047)
+ax.set_ylim(0,255)
+filename =now.strftime("HM1007_plot-%Y_%m_%d-%H_%M_%S.png")
+fig.savefig(filename)
 # plt.show()
