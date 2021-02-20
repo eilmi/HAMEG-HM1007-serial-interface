@@ -6,10 +6,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from datetime import datetime
+import hameghm1007
 
 ser = serial.Serial()
 ser.port = 'COM7' # COM port of arduino
 ser.baudrate=250000
+
 
 ser.open()
 time.sleep(2) # is needed because the arduino resets itself each time a serial connection is established
@@ -91,4 +94,6 @@ ax.set_xlim(0, 2047)
 ax.set_ylim(0,255)
 filename =now.strftime("HM1007_plot-%Y_%m_%d-%H_%M_%S.png")
 fig.savefig(filename)
-# plt.show()
+plt.show()
+
+
