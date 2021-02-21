@@ -16,7 +16,7 @@ import hameghm1007
 ser = serial.Serial()
 
 class App:
-    fname=''
+
     comport=''
     voltages=[5,2,1,0.5,0.2,0.1,0.05,0.02,0.01,0.005]
     times=[50,20,10,5,2,1,0.5,0.2,0.1]
@@ -26,11 +26,15 @@ class App:
     def browse_button(self):
         # Allow user to select a directory and store it in global var
         # called folder_path
-        self.fname = filedialog.askdirectory()
-        print(self.fname)
+        newfolder= filedialog.askdirectory()
+        if (newfolder!=''):
+            os.chdir(newfolder)
+        #print(folderdir.get())
+        folderdir.set(os.getcwd())
 
 
-    def serial_ports(self):    
+
+    def serial_ports(self):
         return serial.tools.list_ports.comports()
 
     def on_select_com_port(self,event=None):
@@ -38,6 +42,10 @@ class App:
         # or get selection directly from combobox
         self.comport=self.comcb.get().split()[0]
         print(self.comport)
+        ser.close()
+        ser.port = self.comport # COM port of arduino
+        ser.baudrate=250000
+        ser.open()
         #print("comboboxes: ", self.cb.get())
 
 
@@ -53,7 +61,7 @@ class App:
     def updateserialports(self):
         self.comcb['values'] = self.serial_ports()
 
-    def readfromoszi(self):
+    def readfromoszi(self,mode='r'):
         if self.comport=='':
             print("Please select comport first")
             return
@@ -67,11 +75,12 @@ class App:
             print("Please set time value first")
             return
         
-        hameghm1007.readfromoszi(ser,self.comport,timeres=self.times[self.timecb.current()]*self.time_units[self.timeunitcb.current()]/200,ch1res=self.voltages[self.voltch1cb.current()]/25,ch2res=self.voltages[self.voltch2cb.current()]/25,ref1res=self.voltages[self.voltref1cb.current()]/25,ref2res=self.voltages[self.voltref2cb.current()]/25)
+        hameghm1007.readfromoszi(ser,mode=mode,timeres=self.times[self.timecb.current()]*self.time_units[self.timeunitcb.current()]/200,ch1res=self.voltages[self.voltch1cb.current()]/25,ch2res=self.voltages[self.voltch2cb.current()]/25,ref1res=self.voltages[self.voltref1cb.current()]/25,ref2res=self.voltages[self.voltref2cb.current()]/25)
         return
     def __init__(self, master):
-        root.title("HAMGEG HM1007 interface")
-        root.geometry("300x200")
+        root.title("HAMEG HM1007 interface")
+        root.geometry("400x250")
+        folderdir.set(os.getcwd())
 
         #Combibox for selecting right serial port
         tk.Label(root,text="Serial port:").grid(column=0,row=0)
@@ -84,10 +93,12 @@ class App:
         self.timecb = ttk.Combobox(root, values=['50','20','10','5','2','1','.5','.2','.1'],width=5)
         self.timecb.bind('<<ComboboxSelected>>', self.on_select_time)
         self.timecb.grid(column=1,row=1)
+        self.timecb.current(0)
 
         #time unit selector
         self.timeunitcb = ttk.Combobox(root, values=['s','ms','us'],width=5)
         self.timeunitcb.grid(column=2,row=1)
+        self.timeunitcb.current(1)
 
         #voltage selector CH1
         tk.Label(root,text="Volts per Division (CH1):").grid(column=0,row=2)
@@ -110,12 +121,17 @@ class App:
         self.voltref2cb.grid(column=1,row=5)
 
         #button to read from oscilloscope
-        self.buttonreadsingle = tk.Button(root,text="Read",command=self.readfromoszi)
-        self.buttonreadsingle.grid(column=0,row=6)
+        self.buttonreadsingle = tk.Button(root,text="Read from scope",command=self.readfromoszi(mode='r'))
+        self.buttonreadsingle.grid(column=0,row=6,columnspan = 2, sticky = tk.W+tk.E)
+        
+        self.folderlabel = tk.Label(root,textvariable = folderdir,width=30)
+        self.folderlabel.grid(column=0,row=7,columnspan = 3, sticky = tk.W+tk.E)
+
 
         self.buttonbrowsefolder = tk.Button(text="Browse", command=self.browse_button)
-        self.buttonbrowsefolder.grid(column=1,row=6)
+        self.buttonbrowsefolder.grid(column=3,row=7)
 
 root = tk.Tk()
+folderdir= tk.StringVar()
 app = App(root)
 root.mainloop()
