@@ -5,6 +5,8 @@ from tkinter import filedialog
 import tkinter.ttk as ttk
 import serial.tools.list_ports
 import hameghm1007
+from datetime import datetime
+import asyncio
 
 ser = serial.Serial()
 
@@ -14,13 +16,14 @@ def serial_ports():
 
 
 class App:
+    data=[]
+    dataframe=[]
     comport = ''
     voltages = [5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005]
     times = [50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]
     time_units = [1, 1e-3, 1e-6]
     voltage_names = ['5V', '2V', '1V', '.5V', '.2V', '.1V', '50mV', '20mV', '10mV', '5mV']
     grid_names = ['+4', '+3', '+2', '+1', '0', '-1', '-2', '-3', '-4']
-
 
     def browse_button(self):
         # Allow user to select a directory and store it in global var
@@ -39,7 +42,7 @@ class App:
         ser.port = self.comport  # COM port of arduino
         ser.baudrate = 250000
         ser.open()
-        print("connected to"+self.comport)
+        print("connected to" + self.comport)
 
     def on_select_time(self, event=None):
         if self.timecb.current() > 3:
@@ -51,6 +54,24 @@ class App:
 
     def updateserialports(self):
         self.comcb['values'] = serial_ports()
+
+    def calcnumpypandas(self):
+        self.ch1, self.ch2, self.ref1, self.ref2 = hameghm1007.createnumpyarrays(self.data)
+        self.dataframe = hameghm1007.createpandasframe(self.ch1, self.ch2, self.ref1, self.ref2)
+        self.fig = hameghm1007.makeplot(self.data, self.ch1, self.ch2, self.ref1, self.ref2,
+                                        timeres=self.times[self.timecb.current()] * self.time_units[
+                                            self.timeunitcb.current()] / 200,
+                                        ch1res=self.voltages[self.voltch1cb.current()] / 25,
+                                        ch2res=self.voltages[self.voltch2cb.current()] / 25,
+                                        ref1res=self.voltages[self.voltref1cb.current()] / 25,
+                                        ref2res=self.voltages[self.voltref2cb.current()] / 25,
+                                        ch1off=127 - 25 * (self.voltch1offcb.current() - 4),
+                                        ch2off=127 - 25 * (self.voltch2offcb.current() - 4))
+
+    def savedata(self,now):
+        #hameghm1007.save(os.getcwd(),now,self.data,self.dataframe,self.fig)
+        print("Data saved")
+        return
 
     def readfromoszi(self, mode='r'):
         if self.comport == '':
@@ -65,21 +86,55 @@ class App:
         if self.timecb.current() == -1:
             print("Please set time value first")
             return
+        now = datetime.now()
 
-        hameghm1007.readfromoszi(ser=ser, mod=mode, directory=self.folderdir,
-                                 timeres=self.times[self.timecb.current()] * self.time_units[
-                                     self.timeunitcb.current()] / 200,
-                                 ch1res=self.voltages[self.voltch1cb.current()] / 25,
-                                 ch2res=self.voltages[self.voltch2cb.current()] / 25,
-                                 ref1res=self.voltages[self.voltref1cb.current()] / 25,
-                                 ref2res=self.voltages[self.voltref2cb.current()] / 25,
-                                 ch1off=127 - 25 * (self.voltch1offcb.current() - 4),
-                                 ch2off=127 - 25 * (self.voltch2offcb.current() - 4))
+        self.data = hameghm1007.readfromoszi(ser=ser, mod=mode)
+        self.calcnumpypandas()
+        test = self.savedata(now)
+
+
+        return
+
+    def readfromfile(self):
+        now = datetime.now()
+        self.data = hameghm1007.readfromfile('c:/data/philipp/git/Hameg-interface/Python/test.txt')
+        self.calcnumpypandas()
+        #hameghm1007.save(os.getcwd(),now,self.data,self.dataframe,self.fig)
+        test = hameghm1007.readfromosziold(data=self.data, directory=self.folderdir)
+        print("Data Saved")
         return
 
     def __init__(self, master):
         root.title("HAMEG HM1007 interface")
         root.geometry("400x250")
+        self.menubar = tk.Menu(root)
+        root.config(menu=self.menubar)
+
+
+        #File Menu
+        self.file_menu = tk.Menu(
+            self.menubar,
+            tearoff=0
+        )
+        self.file_menu.add_command(label='Import Raw Data', command=lambda: self.readfromfile())
+        self.menubar.add_cascade(
+            label="File",
+            menu=self.file_menu
+        )
+        #Help Menu
+
+        self.help_menu = tk.Menu(
+            self.menubar,
+            tearoff=0
+        )
+        self.menubar.add_cascade(
+            label="Help",
+            menu=self.help_menu
+        )
+
+
+        self.help_menu.add_command(label='Welcome')
+
         self.folderdir = tk.StringVar()
         self.folderdir.set(os.getcwd())
         self.saverawlog = tk.IntVar(value=1)
@@ -148,6 +203,7 @@ class App:
         self.buttonreadsingle = tk.Button(root, text="Read from scope", command=lambda: (self.readfromoszi(mode='R')))
         self.buttonreadsingle.grid(column=0, row=6, columnspan=2, sticky=tk.W + tk.E)
 
+
         self.folderlabel = tk.Label(root, textvariable=self.folderdir, width=30)
         self.folderlabel.grid(column=0, row=7, columnspan=3, sticky=tk.W + tk.E)
 
@@ -155,12 +211,14 @@ class App:
         self.buttonbrowsefolder.grid(column=3, row=7)
 
         tk.Label(root, text="Things to save:").grid(column=0, row=8)
-        self.saverawlogcb = tk.Checkbutton(text="raw log",variable=self.saverawlog)
-        self.saverawlogcb.grid(column=0,row=9)
-        self.savecsvcb = tk.Checkbutton(text="csv",variable=self.savecsv)
-        self.savecsvcb.grid(column=1,row=9)
-        self.saveimgcb = tk.Checkbutton(text="png",variable=self.saveimg)
-        self.saveimgcb.grid(column=2,row=9)
+        self.saverawlogcb = tk.Checkbutton(text="raw log", variable=self.saverawlog)
+        self.saverawlogcb.grid(column=0, row=9)
+        self.savecsvcb = tk.Checkbutton(text="csv", variable=self.savecsv)
+        self.savecsvcb.grid(column=1, row=9)
+        self.saveimgcb = tk.Checkbutton(text="png", variable=self.saveimg)
+        self.saveimgcb.grid(column=2, row=9)
+
+        return
 
 
 root = tk.Tk()
