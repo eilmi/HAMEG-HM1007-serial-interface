@@ -76,7 +76,7 @@ class App:
         test.set_dpi(80.0)
         self.output= FigureCanvasTkAgg(test,master=root)
         self.output.get_tk_widget().config(width=640/1.25, height=480/1.25)
-        self.output.get_tk_widget().grid(column=3,row=0,rowspan=7,sticky=tk.W+tk.E)
+        self.output.get_tk_widget().grid(column=3,row=0,rowspan=9,sticky=tk.W+tk.E)
         self.output.draw()
         plt.close('all')
 
@@ -86,21 +86,30 @@ class App:
         t_s=self.times[self.timecb.current()] * self.time_units[
             self.timeunitcb.current()] / 200
         f_s=1/t_s
-        x=self.ch1
-        X = fftpack.fft(x)
-        freqs = fftpack.fftfreq(len(x)) * f_s
+
+        try:
+            x = self.ch1 / 1000
+            X = fftpack.fft(x)
+            freqs = fftpack.fftfreq(len(x)) * f_s
+
+        except ValueError:
+            print("No data for FFT")
+            return False
+        except TypeError:
+            print ("No data for FFT")
+            return False
 
         fig, ax = plt.subplots()
 
         ax.stem(freqs, np.abs(X))
         ax.set_xlabel('Frequency in Hertz [Hz]')
         ax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-        ax.set_xlim(0, f_s / 50)
-        ax.set_ylim(-5, 110)
+        ax.set_xlim(-1, f_s / 50)
+        #ax.set_ylim(-5, 110)
 
         plt.show()
 
-        return
+        return True
 
     def on_select_com_port(self, event=None):
         """
@@ -160,9 +169,13 @@ class App:
         :param now: datetime timestamp (datetime.now())
         :return:
         """
+        if len(self.data)==0:
+            print("No data -> not saving")
+            return False
+
         hameghm1007.save(self.folderdir.get(),self.lasttimestamp,self.data,self.dataframe,self.fig)
-        print("Data saved")
-        return
+        print("data saved")
+        return True
 
     def readfromoszi(self, mode='R'):
         """
@@ -171,18 +184,15 @@ class App:
         :return: True is data is successfully read from oscilloscope
         """
         if self.comport == '':
-            print("Please select comport first")
-            return False
-        if self.voltch1cb.current() == -1:
-            print("Please set Voltage per Division first")
+            print("No COM port selected")
             return False
         if self.timeunitcb.current() == -1:
-            print("Please set time unit first")
+            print("No time unit selected")
             return False
         if self.timecb.current() == -1:
-            print("Please set time value first")
+            print("no time value selected")
             return False
-        self.lasttimestamp =datetime.now()
+        self.lasttimestamp = datetime.now()
         self.data = hameghm1007.readfromoszi(ser=ser, mod=mode)
         #self.calcnumpypandasfig()
         self.update_fig()
@@ -201,6 +211,7 @@ class App:
 
         root.title("HAMEG HM1007 interface")
         root.geometry("800x500")
+        root.minsize(800,500)
         tk.Grid.columnconfigure(root, 3, weight=1)
         self.menubar = tk.Menu(root)
         root.config(menu=self.menubar)
@@ -243,7 +254,7 @@ class App:
         self.timecb.grid(column=1, row=1)
         self.timecb.current(0)
 
-        # time unit selector
+        # time unit selectorS
         self.timeunitcb = ttk.Combobox(root, values=['s', 'ms', 'us'], width=5)
         self.timeunitcb.grid(column=2, row=1)
         self.timeunitcb.bind('<<ComboboxSelected>>', self.update_fig)
@@ -301,14 +312,15 @@ class App:
         self.buttonreadsingle = tk.Button(root, text="Read from scope", command=lambda: (self.readfromoszi(mode='R')))
         self.buttonreadsingle.grid(column=0, row=6, columnspan=2, sticky=tk.W + tk.E)
 
+        self.buttonreadsingleshot = tk.Button(root, text="Reset Single-Shot + Read", command=lambda: (self.readfromoszi(mode='S')))
+        self.buttonreadsingleshot.grid(column=0, row=7, columnspan=2, sticky=tk.W + tk.E)
+
         self.folderlabel = tk.Label(root, textvariable=self.folderdir, width=30)
-        self.folderlabel.grid(column=0, row=10, columnspan=3, sticky=tk.W + tk.E)
+        self.folderlabel.grid(column=0, row=11, columnspan=4, sticky=tk.E +tk.W )
 
         self.fftbutton = tk.Button(text="Show FFT", command=self.plot_fft)
-        self.fftbutton.grid(column=3, row=7)
+        self.fftbutton.grid(column=1, row=10)
 
-        self.savebutton = tk.Button(text="Save", command=self.savedata)
-        self.savebutton.grid(column=0, row=7)
 
         tk.Label(root, text="Things to save:").grid(column=0, row=8)
         self.saverawlogcb = tk.Checkbutton(text="raw log", variable=self.saverawlog)
@@ -317,6 +329,9 @@ class App:
         self.savecsvcb.grid(column=1, row=9)
         self.saveimgcb = tk.Checkbutton(text="png", variable=self.saveimg)
         self.saveimgcb.grid(column=2, row=9)
+
+        self.savebutton = tk.Button(text="Save", command=self.savedata)
+        self.savebutton.grid(column=0, row=10)
 
         self.update_fig()
 
