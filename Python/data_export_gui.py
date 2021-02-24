@@ -15,6 +15,8 @@ from matplotlib import tight_layout
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
 
+import settings_gui
+
 ser = serial.Serial()
 
 
@@ -102,23 +104,17 @@ class App():
     def plot_fft(self,event=None):
         f_s = 1/(self.times[self.timecb.current()] * self.time_units[
             self.timeunitcb.current()] / 200)
-        self.te.set_xlim(-40,f_s/self.maxfftslider.get())
-
         self.scopeax.clear()
         self.scopeax.stem(self.freqs, np.abs(self.X) * 2 / len(self.data))
         # ax.stem(freqs, X)
         self.scopeax.set_xlabel('Frequency [Hz]')
         self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
         self.scopeax.set_xlim(-10, f_s / self.maxfftslider.get())
-        #self.scopefig.set_dpi(80)
-        #self.scope.get_tk_widget().grid(column=3, row=0, rowspan=11, sticky=tk.W + tk.E)
-        #self.scope.
+
         self.scope.draw_idle()
-        #self.scopefig.show()
 
         return
 
-    t =0
     def plot_timeplot(self):
         self.scopeax.clear()
 
@@ -144,7 +140,7 @@ class App():
 
 
         return
-    t=0
+
     def update_fft_x_lims(self,event=None):
 
         if (self.fft_in_plot.get()==1):
@@ -210,7 +206,11 @@ class App():
                                                                                                ch1off=127 - 25 * (
                                                                                                            self.voltch1offcb.current() - 4),
                                                                                                ch2off=127 - 25 * (
-                                                                                                           self.voltch2offcb.current() - 4))
+                                                                                                           self.voltch2offcb.current() - 4),
+                                                                                               ref1off=127 - 25 * (
+                                                                                                       self.voltref1offcb.current() - 4),
+                                                                                               ref2off=127 - 25 * (
+                                                                                                       self.voltref2offcb.current() - 4))
         self.dataframe = hameghm1007.createpandasframe(self.timearr, self.ch1, self.ch2, self.ref1, self.ref2)
         self.timeplotfig,self.timeplotax = hameghm1007.makeplot(self.data, self.ch1, self.ch2, self.ref1, self.ref2, self.timearr)
 
@@ -254,11 +254,9 @@ class App():
     def __init__(self, master):
 
         #self.timeplotfig, self.timeplotax = plt.subplots()
-        self.timeplotfig = Figure(dpi=100)
-        self.timeplotax = self.timeplotfig.add_subplot(111)
-        self.pll, self.te=plt.subplots()
+
         #self.scopefig,self.scopeax = plt.subplots()
-        self.scopefig = Figure(dpi=100)
+        self.scopefig = Figure(dpi=80)
         self.scopeax = self.scopefig.add_subplot(111)
         self.lasttimestamp = datetime.now()
         self.folderdir = tk.StringVar()
@@ -402,16 +400,17 @@ class App():
         self.savebutton = tk.Button(text="Save", command=self.savedata)
         self.savebutton.grid(column=0, row=10)
 
-        self.maxfftslider= tk.Scale(root, from_=10, to=200,orient=tk.HORIZONTAL,command=self.update_fft_x_lims)
-        self.maxfftslider.grid(column=3,row=12)
-
+        self.maxfftslider = tk.Scale(root, from_=10, to=200, orient=tk.HORIZONTAL, command=self.update_fft_x_lims)
+        self.maxfftslider.grid(column=3, row=12)
         self.calcnumpypandasfig()
         self.update_fig()
 
+        self.maxfftslider = tk.Scale(root, from_=10, to=200, orient=tk.HORIZONTAL, command=self.update_fft_x_lims)
+        self.maxfftslider.grid(column=3, row=12)
 
         return
 
-
 root = tk.Tk()
 app = App(root)
+settings = settings_gui.Settings(root,app)
 root.mainloop()
