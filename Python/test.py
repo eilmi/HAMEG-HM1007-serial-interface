@@ -1,36 +1,30 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-from tkinter import ttk
 import tkinter as tk
 
+class Demo1:
+    def __init__(self, master):
+        self.master = master
+        self.frame = tk.Frame(self.master)
+        self.button1 = tk.Button(self.frame, text = 'New Window', width = 25, command = self.new_window)
+        self.button1.pack()
+        self.frame.pack()
+    def new_window(self):
+        self.newWindow = tk.Toplevel(self.master)
+        self.app = Demo2(self.newWindow)
 
-class MainApplication(tk.Tk):
-    def __init__(self):
-        tk.Tk.__init__(self)
-        notes = ttk.Notebook(self)
-        notes.grid(column=0, row=0, sticky='nsew')
-        notes.rowconfigure(0, weight=1)
-        self.page = ttk.Frame(notes)
-        notes.add(self.page, text='Picture')
-        self.plotter()
-        input_frame = ttk.Frame(self)
-        input_frame.grid(column=1, row=0, sticky='nsew')
+class Demo2:
+    def __init__(self, master):
+        self.master = master
+        self.frame = tk.Frame(self.master)
+        self.quitButton = tk.Button(self.frame, text = 'Quit', width = 25, command = self.close_windows)
+        self.quitButton.pack()
+        self.frame.pack()
+    def close_windows(self):
+        self.master.destroy()
 
-        button = ttk.Button(input_frame, text='Plot', command=self.new_draw)
-        button.grid(column=0, row=4, columnspan=2, sticky='ew')
+def main():
+    root = tk.Tk()
+    app = Demo1(root)
+    root.mainloop()
 
-    def plotter(self):
-        self.figure = Figure(dpi=100)
-        self.plot_canvas = FigureCanvasTkAgg(self.figure, self.page)
-        self.axes = self.figure.add_subplot(111)
-        self.plot_canvas.get_tk_widget().grid(column=0, row=0, sticky='nsew')
-    t=0
-    def new_draw(self):
-        self.t=self.t+1
-        self.axes.clear()
-        x_list = [x for x in range(0, self.t)]
-        y_list = [x^3 for x in x_list]
-        self.axes.plot(x_list, y_list, color='y')
-        self.plot_canvas.draw_idle()
-
-MainApplication().mainloop()
+if __name__ == '__main__':
+    main()
