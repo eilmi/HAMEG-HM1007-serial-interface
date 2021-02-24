@@ -1,23 +1,36 @@
-import serial
-import os
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from tkinter import ttk
 import tkinter as tk
-from tkinter import filedialog
-import tkinter.ttk as ttk
-import serial.tools.list_ports
-import hameghm1007
-from datetime import datetime, time
-import time
 
-ser = serial.Serial()
 
-data = hameghm1007.readfromfile('test.txt')
-ch1, ch2, ref1, ref2 = hameghm1007.createnumpyarrays(data)
-dateframe = hameghm1007.createpandasframe(ch1, ch2, ref1, ref2)
+class MainApplication(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        notes = ttk.Notebook(self)
+        notes.grid(column=0, row=0, sticky='nsew')
+        notes.rowconfigure(0, weight=1)
+        self.page = ttk.Frame(notes)
+        notes.add(self.page, text='Picture')
+        self.plotter()
+        input_frame = ttk.Frame(self)
+        input_frame.grid(column=1, row=0, sticky='nsew')
 
-fig = hameghm1007.makeplot(data, ch1, ch2, ref1, ref2,timeres=1,ch1res=1,ch2res=1,ref1res=1,ref2res=1)
+        button = ttk.Button(input_frame, text='Plot', command=self.new_draw)
+        button.grid(column=0, row=4, columnspan=2, sticky='ew')
 
-hameghm1007.save(os.getcwd(),datetime.now(),data,dateframe,fig)
+    def plotter(self):
+        self.figure = Figure(dpi=100)
+        self.plot_canvas = FigureCanvasTkAgg(self.figure, self.page)
+        self.axes = self.figure.add_subplot(111)
+        self.plot_canvas.get_tk_widget().grid(column=0, row=0, sticky='nsew')
+    t=0
+    def new_draw(self):
+        self.t=self.t+1
+        self.axes.clear()
+        x_list = [x for x in range(0, self.t)]
+        y_list = [x^3 for x in x_list]
+        self.axes.plot(x_list, y_list, color='y')
+        self.plot_canvas.draw_idle()
 
-time.sleep(10)
-
-print("Ende")
+MainApplication().mainloop()

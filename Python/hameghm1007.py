@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import time
+from scipy import fftpack
+
 
 
 def readfromfile(filename):
@@ -126,7 +128,7 @@ def makeplot(data, ch1_data, ch2_data, ref1_data, ref2_data, timearray):
     ax.grid()
 
     # plt.show()
-    return fig
+    return fig,ax
 
 
 def save(directory, now, data, dataframe, fig):
@@ -152,3 +154,26 @@ def save(directory, now, data, dataframe, fig):
     filename = now.strftime("HM1007_plot-%Y_%m_%d-%H_%M_%S.png")
     fig.savefig(filename)
     return True
+
+
+def calc_fft(data, time_interval):
+    f_s = 1 / time_interval
+
+    try:
+        X = fftpack.fft(data)
+        freqs = fftpack.fftfreq(len(data)) * f_s
+
+    except ValueError:
+        print("No data for FFT")
+        return False
+    except TypeError:
+        print("No data for FFT")
+        return False
+
+    figfft, axfft = plt.subplots()
+
+
+    #(1/t_s)/xlim
+    # ax.set_ylim(-5, 110)
+
+    return X,freqs
