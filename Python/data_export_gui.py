@@ -98,12 +98,12 @@ class App(tk.Frame):
         :param event:
         :return: nothing
         """
-        if self.timecb.current() > 3:  # time value is smaller than 5 -> µs are not possible
-            if self.timeunitcb.current() == 2:  # reset selection if µs are selected
-                self.timeunitcb.set('')
-            self.timeunitcb['values'] = ['s', 'ms']
+        if self.settingswindow.timecb.current() > 3:  # time value is smaller than 5 -> µs are not possible
+            if self.settingswindow.timeunitcb.current() == 2:  # reset selection if µs are selected
+                self.settingswindow.timeunitcb.set('')
+            self.settingswindow.timeunitcb['values'] = ['s', 'ms']
         else:  # µs are possible
-            self.timeunitcb['values'] = ['s', 'ms', 'us']
+            self.settingswindow.timeunitcb['values'] = ['s', 'ms', 'us']
 
         self.update_fig()
         return
@@ -162,10 +162,10 @@ class App(tk.Frame):
         if self.comport == '':
             print("No COM port selected")
             return False
-        if self.timeunitcb.current() == -1:
+        if self.settingswindow.timeunitcb.current() == -1:
             print("No time unit selected")
             return False
-        if self.timecb.current() == -1:
+        if self.settingswindow.timecb.current() == -1:
             print("no time value selected")
             return False
         self.lasttimestamp = datetime.now()
