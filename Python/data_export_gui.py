@@ -1,19 +1,10 @@
-import serial
 import os
 import tkinter as tk
 from tkinter import filedialog
-import tkinter.ttk as ttk
 import serial.tools.list_ports
 import hameghm1007
 from datetime import datetime
 import webbrowser
-from scipy import fftpack
-import numpy as np
-from matplotlib.figure import Figure
-import matplotlib.pylab as plt
-from matplotlib import tight_layout
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
-                                               NavigationToolbar2Tk)
 
 import settings_gui
 import scope_gui
@@ -69,6 +60,7 @@ class App(tk.Frame):
             self.settingswindow.timeunitcb.current()] / 200
         if (len(self.ch1) != 0):
             self.X, self.freqs = hameghm1007.calc_fft(self.ch1, t_s)
+            self.X[0]=self.X[0]/2
 
 
         self.scopewindow.plot()
@@ -137,8 +129,12 @@ class App(tk.Frame):
                                                                                                        self.settingswindow.voltref2offcb.current() - 4))
         self.dataframe = hameghm1007.createpandasframe(self.timearr, self.ch1, self.ch2, self.ref1, self.ref2)
         self.timeplotfig,self.timeplotax = hameghm1007.makeplot(self.data, self.ch1, self.ch2, self.ref1, self.ref2, self.timearr)
+        return
 
-
+    def savemanual(self):
+        self.lasttimestamp = datetime.now()
+        self.savedata()
+        return
     def savedata(self):
         """
         saves current data to files
@@ -172,7 +168,8 @@ class App(tk.Frame):
         self.data = hameghm1007.readfromoszi(ser=ser, mod=mode)
         # self.calcnumpypandasfig()
         self.update_fig()
-        self.savedata()
+        if (self.settingswindow.autosave.get()==1):
+            self.savedata()
 
         return True
 
@@ -181,15 +178,11 @@ class App(tk.Frame):
         self.lasttimestamp = datetime.now()
         self.folderdir = tk.StringVar()
         self.folderdir.set(os.getcwd())
-        self.saverawlog = tk.IntVar(value=1)
-        self.savecsv = tk.IntVar(value=1)
-        self.saveimg = tk.IntVar(value=1)
-        self.autosave = tk.IntVar(value=1)
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
 
-        self.menubar = tk.Menu(parent)
+        self.menubar = tk.Menu(self.parent)
         parent.config(menu=self.menubar)
 
         # File Menu
@@ -220,22 +213,21 @@ class App(tk.Frame):
 
         self.scopewindow = scope_gui.ScopeWindow(self)
         self.settingswindow = settings_gui.SettingsWindow(self)
-        #self.test = tk.Frame(ScopeWindow(self.parent))
-        #self.scopewindow.grid(row=0,column=0)
+
+        self.folderlabel = tk.Label(self,textvariable=self.folderdir)
+        self.folderlabel.grid(column=0, row=1, columnspan=2, sticky=tk.W)
+        self.update_fig()
+
         self.grid()
 
-        #self.settingswindow.grid(row=0,column=0)
-        #self.scopewindow.grid(row=0,column=1)
-
-
-        self.calcnumpypandasfig()
-        self.update_fig()
 
         return
 
 
 def main():
     root = tk.Tk()
+    root.geometry("800x500")
+    root.title("HAMEG HM1007 Interface")
     app = App(root)
     root.mainloop()
 

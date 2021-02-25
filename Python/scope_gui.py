@@ -2,16 +2,24 @@ import tkinter as tk
 from tkinter import ttk
 import matplotlib.pylab as plt
 import numpy as np
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 
 class ScopeWindow(tk.Frame):
+    """
+    right part of the main window where the Canvas figure is shown
+    """
 
     def toggleplot(self):
-        if (self.fft_in_plot.get()==0):
+        """
+        toggle between time plot and FFT
+        :return: nothing
+        """
+        if (self.fft_in_plot.get() == 0):
             self.fft_in_plot.set(1)
-            self.toggleplot['text']="show plot"
+            self.toggleplot['text'] = "show plot"
             self.plot_fft()
         else:
             self.fft_in_plot.set(0)
@@ -19,27 +27,47 @@ class ScopeWindow(tk.Frame):
             self.plot_timeplot()
         plt.close('all')
         return
-    def plot_fft(self,event=None):
-        f_s = 1/(self.parent.settingswindow.times[self.parent.settingswindow.timecb.current()] * self.parent.settingswindow.time_units[
-            self.parent.settingswindow.timeunitcb.current()] / 200)
+
+    def plot_fft(self, event=None):
+        """
+        plot FFT in Canvas figure
+        :param event: event
+        :return: nothing
+        """
+        f_s = 1 / (self.parent.settingswindow.times[self.parent.settingswindow.timecb.current()] *
+                   self.parent.settingswindow.time_units[
+                       self.parent.settingswindow.timeunitcb.current()] / 200)
         self.scopeax.clear()
         self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.data))
         # ax.stem(freqs, X)
         self.scopeax.set_xlabel('Frequency [Hz]')
         self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-        self.scopeax.set_xlim(-10, f_s / self.maxfftslider.get())
+        self.scopeax.set_xlim(-f_s / 2, f_s / 2)
 
         self.scope.draw_idle()
 
+        print(self.parent.freqs[0])
+        print(len(self.parent.X))
+
         return
 
-    def update_fft_x_lims(self,event=None):
+    def update_fft_x_lims(self, event=None):
+        """
+        replot FFT with new xlimit
+        :param event:
+        :return:
+        """
 
-        if (self.fft_in_plot.get()==1):
+        if (self.fft_in_plot.get() == 1):
             self.plot_fft()
             plt.close('all')
         return
+
     def plot_timeplot(self):
+        """
+        Plot the time plot in the Canvas figure
+        :return: nothing
+        """
         self.scopeax.clear()
 
         if "XY-Plot" in self.parent.data:
@@ -53,18 +81,18 @@ class ScopeWindow(tk.Frame):
                 self.scopeax.plot(self.timearr, self.parent.parent.ref1)
             if (np.size(self.parent.ref2) == 2048):
                 self.scopeax.plot(self.parent.timearr, self.parent.ref2)
-            # ax.plot(ch2_data,timearray)
-            # ax.plot(ref1_data,timearray)
-            # ax.plot(ref2_data,timearray)
 
-        self.scopeax.set(xlabel='time [s]', ylabel='Volts',
-                         title='Data from Hameg HM1007')
+        self.scopeax.set(xlabel='time [s]', ylabel='Volts')
         self.scopeax.grid()
         self.scope.draw_idle()
 
         return
 
     def plot(self):
+        """
+        plot Canvas figure
+        :return:
+        """
         if (self.fft_in_plot.get() == 0):
             self.plot_timeplot()
         else:
@@ -72,24 +100,37 @@ class ScopeWindow(tk.Frame):
         plt.close('all')
 
     def __init__(self, parent, *args, **kwargs):
+        """
+
+        :param parent:
+        :param args: not used
+        :param kwargs: not used
+        """
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         self.frame = tk.Frame(self.parent)
-
+        self.scopeframe = tk.Frame(self.frame)
         self.fft_in_plot = tk.IntVar(value=0)
         self.scopefig = Figure(dpi=80)
         self.scopeax = self.scopefig.add_subplot(111)
-        self.scope = FigureCanvasTkAgg(self.scopefig, master=self.frame)
+        self.scope = FigureCanvasTkAgg(self.scopefig, master=self.scopeframe)
+        toolbar = NavigationToolbar2Tk(self.scope, self.scopeframe)
+        toolbar.update()
         self.scope.get_tk_widget().config(width=640 / 1.25, height=480 / 1.25)
-        self.scope.get_tk_widget().grid(column=0, row=0,columnspan=3, sticky=tk.W + tk.E)
+        # self.scope
+        self.scope.get_tk_widget().pack()
         self.scope.draw()
 
-        self.maxfftslider = tk.Scale(self.frame, from_=10, to=200, orient=tk.HORIZONTAL, command=self.update_fft_x_lims)
-        self.maxfftslider.grid(column=0, row=1)
+        self.scopeframe.grid(column=0, row=0, columnspan=3, sticky=tk.W + tk.E)
 
-        self.toggleplot = tk.Button(self.frame,text="Show FFT", command=self.toggleplot)
+        #self.maxfftslider = tk.Scale(self.frame, from_=10, to=200, orient=tk.HORIZONTAL, command=self.update_fft_x_lims)
+        #self.maxfftslider.grid(column=0, row=1)
+        # self.maxfftslider.pack()
+
+        self.toggleplot = tk.Button(self.frame, text="Show FFT", command=self.toggleplot)
         self.toggleplot.grid(column=1, row=1)
+        # self.toggleplot.pack()
 
-        self.frame.grid(column=1,row=0)
+        self.frame.grid(column=1, row=0)
         return
