@@ -36,7 +36,7 @@ class App(tk.Frame):
     def load_raw_data_button(self):
         """
         loads serial data saved into a .txt file and updates scope on screen
-        :return: True if successfully loaded data
+        :return: True if successfully imported data
         """
         filedir = filedialog.askopenfilename(title="Select serial dump file",
                                              filetypes=(("Serial dump file", '*.txt'),))
@@ -44,24 +44,20 @@ class App(tk.Frame):
             return False
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
-        self.lasttimestamp = datetime.now()
+        #self.lasttimestamp = datetime.now()
         self.calcnumpypandasfig()
         self.update_fig()
         return True
 
     def update_fig(self, event=None):
         """
-
         :param event: needed because it´s executed when selection in combobox is made
         :return: nothing
         """
         self.calcnumpypandasfig()
-        t_s = self.settingswindow.times[self.settingswindow.timecb.current()] * self.settingswindow.time_units[
-            self.settingswindow.timeunitcb.current()] / 200
+        t_s = self.settingswindow.getsamplinginterval()
         if (len(self.ch1) != 0):
             self.X, self.freqs = hameghm1007.calc_fft(self.ch1, t_s)
-            self.X[0]=self.X[0]/2
-
 
         self.scopewindow.plot()
         return
@@ -107,10 +103,7 @@ class App(tk.Frame):
         :return: nothing
         """
         self.timearr, self.ch1, self.ch2, self.ref1, self.ref2 = hameghm1007.createnumpyarrays(self.data,
-                                                                                               timeres=self.settingswindow.times[
-                                                                                                           self.settingswindow.timecb.current()] *
-                                                                                                       self.settingswindow.time_units[
-                                                                                                           self.settingswindow.timeunitcb.current()] / 200,
+                                                                                               timeres=self.settingswindow.getsamplinginterval(),
                                                                                                ch1res=self.settingswindow.voltages[
                                                                                                           self.settingswindow.voltch1cb.current()] / 25,
                                                                                                ch2res=self.settingswindow.voltages[
@@ -132,6 +125,11 @@ class App(tk.Frame):
         return
 
     def savemanual(self):
+        """
+        is executed when "Save" Button in GUI is pressed
+        gets new timestamp and exports data to file system
+        :return:
+        """
         self.lasttimestamp = datetime.now()
         self.savedata()
         return
@@ -199,14 +197,9 @@ class App(tk.Frame):
         )
         # Help Menu
 
-        self.help_menu = tk.Menu(
-            self.menubar,
-            tearoff=0
+        self.help_menu = tk.Menu(self.menubar, tearoff=0
         )
-        self.menubar.add_cascade(
-            label="Help",
-            menu=self.help_menu
-        )
+        self.menubar.add_cascade(label="Help", menu=self.help_menu)
 
         self.help_menu.add_command(label='GitHub page', command=lambda: webbrowser.open_new(
             'https://github.com/eilmi/HAMEG-HM1007-serial-interface'))
@@ -219,7 +212,6 @@ class App(tk.Frame):
         self.update_fig()
 
         self.grid()
-
 
         return
 

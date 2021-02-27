@@ -9,7 +9,8 @@ from matplotlib.figure import Figure
 
 class ScopeWindow(tk.Frame):
     """
-    right part of the main window where the Canvas figure is shown
+    scope part of the main window
+    consists mainly of a Canvas figure in which the matplotlib figure is shown
     """
 
     def toggleplot(self):
@@ -20,6 +21,7 @@ class ScopeWindow(tk.Frame):
         if (self.fft_in_plot.get() == 0):
             self.fft_in_plot.set(1)
             self.toggleplot['text'] = "show plot"
+            #self.scopeframe.destroy()
             self.plot_fft()
         else:
             self.fft_in_plot.set(0)
@@ -34,20 +36,20 @@ class ScopeWindow(tk.Frame):
         :param event: event
         :return: nothing
         """
-        f_s = 1 / (self.parent.settingswindow.times[self.parent.settingswindow.timecb.current()] *
-                   self.parent.settingswindow.time_units[
-                       self.parent.settingswindow.timeunitcb.current()] / 200)
-        self.scopeax.clear()
-        self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.data))
-        # ax.stem(freqs, X)
-        self.scopeax.set_xlabel('Frequency [Hz]')
-        self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-        self.scopeax.set_xlim(-f_s / 2, f_s / 2)
+        try:
+            f_s = 1/self.parent.settingswindow.getsamplinginterval()
+            self.scopeax.clear()
+            self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.data))
+            # ax.stem(freqs, X)
+            self.scopeax.set_xlabel('Frequency [Hz]')
+            self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
+            self.scopeax.set_xlim(-f_s / 2, f_s / 2)
 
-        self.scope.draw_idle()
-
-        print(self.parent.freqs[0])
-        print(len(self.parent.X))
+            self.scope.draw_idle()
+        except AttributeError:
+            print("FFT not calculated -> skipped plotting")
+        #print(self.parent.freqs[0])
+        #print(len(self.parent.X))
 
         return
 
@@ -101,8 +103,8 @@ class ScopeWindow(tk.Frame):
 
     def __init__(self, parent, *args, **kwargs):
         """
-
-        :param parent:
+        initialization of scope part of GUI
+        :param parent: main window
         :param args: not used
         :param kwargs: not used
         """
@@ -112,6 +114,7 @@ class ScopeWindow(tk.Frame):
         self.frame = tk.Frame(self.parent)
         self.scopeframe = tk.Frame(self.frame)
         self.fft_in_plot = tk.IntVar(value=0)
+
         self.scopefig = Figure(dpi=80)
         self.scopeax = self.scopefig.add_subplot(111)
         self.scope = FigureCanvasTkAgg(self.scopefig, master=self.scopeframe)

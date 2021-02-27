@@ -24,14 +24,27 @@ class SettingsWindow(tk.Frame):
 
     def updateserialports(self):
         """
-
+        update entries of combobox for selecting available serial ports
         :return:
         """
         self.comcb['values'] = self.get_serial_port_list()
 
+    def getsamplinginterval(self):
+        """
+        calculate sampling time interval based on selected time per division
+        :return: sampling interval
+        """
+
+        return self.times[self.timecb.current()] * self.time_units[self.timeunitcb.current()] / 200
 
 
     def __init__(self, parent, *args, **kwargs):
+        """
+        initialization of setting part of main GUI
+        :param parent: main window
+        :param args: not used
+        :param kwargs: not used
+        """
 
         tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent

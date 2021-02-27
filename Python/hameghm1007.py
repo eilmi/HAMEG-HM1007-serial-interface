@@ -161,6 +161,7 @@ def calc_fft(data, time_interval):
 
     try:
         X = fftpack.fft(data)
+        X[0] = X[0] / 2
         freqs = fftpack.fftfreq(len(data)) * f_s
 
     except ValueError:

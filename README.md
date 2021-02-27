@@ -31,5 +31,8 @@ Although it's not necessary to know how the microcontroller gets all the data fr
 
 TODO
 
+### Pictures
+![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Title")
+
 ## Create a CSV file with the provided Python code
 TODO
