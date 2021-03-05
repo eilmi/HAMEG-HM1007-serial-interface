@@ -39,7 +39,7 @@ class ScopeWindow(tk.Frame):
         try:
             f_s = 1/self.parent.settingswindow.getsamplinginterval()
             self.scopeax.clear()
-            self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.data))
+            self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.dataframe.CH1.tolist()))
             # ax.stem(freqs, X)
             self.scopeax.set_xlabel('Frequency [Hz]')
             self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
@@ -75,14 +75,14 @@ class ScopeWindow(tk.Frame):
         if "XY-Plot" in self.parent.data:
             self.scopeax.plot(self.parent.ch2, self.parent.ch1)
         else:
-            if (np.size(self.parent.ch1) == 2048):
-                self.scopeax.plot(self.parent.timearr, self.parent.ch1)
-            if (np.size(self.parent.ch2) == 2048):
-                self.scopeax.plot(self.parent.timearr, self.parent.ch2)
-            if (np.size(self.parent.ref1) == 2048):
-                self.scopeax.plot(self.timearr, self.parent.parent.ref1)
-            if (np.size(self.parent.ref2) == 2048):
-                self.scopeax.plot(self.parent.timearr, self.parent.ref2)
+            if 'CH1' in self.parent.dataframe:
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH1"])
+            if 'CH2' in self.parent.dataframe:
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH2"])
+            if 'REF1' in self.parent.dataframe:
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF1"])
+            if 'REF2' in self.parent.dataframe:
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF2"])
 
         self.scopeax.set(xlabel='time [s]', ylabel='Volts')
         self.scopeax.grid()

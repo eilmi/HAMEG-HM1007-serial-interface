@@ -11,21 +11,19 @@ import scope_gui
 
 ser = serial.Serial()
 
+
 class App(tk.Frame):
     data = []
     dataframe = []
     comport = ''
     folderdir = ''
 
-
-
     def browse_button(self):
         """
         asks user where to store the oscilloscope data and stores location in self.folderdir
         :return: nothing
         """
-        # Allow user to select a directory and store it in global var
-        # called folder_path
+
         newfolder = filedialog.askdirectory()
         if newfolder != '':
             os.chdir(newfolder)
@@ -44,8 +42,7 @@ class App(tk.Frame):
             return False
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
-        #self.lasttimestamp = datetime.now()
-        self.calcnumpypandasfig()
+        # self.lasttimestamp = datetime.now()
         self.update_fig()
         return True
 
@@ -56,12 +53,11 @@ class App(tk.Frame):
         """
         self.calcnumpypandasfig()
         t_s = self.settingswindow.getsamplinginterval()
-        if (len(self.ch1) != 0):
-            self.X, self.freqs = hameghm1007.calc_fft(self.ch1, t_s)
+        if "CH1" in self.dataframe:
+            self.X, self.freqs = hameghm1007.calc_fft(self.dataframe.CH1.tolist(), t_s)
 
         self.scopewindow.plot()
         return
-
 
     def on_select_com_port(self, event=None):
         """
@@ -96,32 +92,29 @@ class App(tk.Frame):
         self.update_fig()
         return
 
-
     def calcnumpypandasfig(self):
         """
 
         :return: nothing
         """
-        self.timearr, self.ch1, self.ch2, self.ref1, self.ref2 = hameghm1007.createnumpyarrays(self.data,
-                                                                                               timeres=self.settingswindow.getsamplinginterval(),
-                                                                                               ch1res=self.settingswindow.voltages[
-                                                                                                          self.settingswindow.voltch1cb.current()] / 25,
-                                                                                               ch2res=self.settingswindow.voltages[
-                                                                                                          self.settingswindow.voltch2cb.current()] / 25,
-                                                                                               ref1res=self.settingswindow.voltages[
-                                                                                                           self.settingswindow.voltref1cb.current()] / 25,
-                                                                                               ref2res=self.settingswindow.voltages[
-                                                                                                           self.settingswindow.voltref2cb.current()] / 25,
-                                                                                               ch1off=127 - 25 * (
-                                                                                                           self.settingswindow.voltch1offcb.current() - 4),
-                                                                                               ch2off=127 - 25 * (
-                                                                                                           self.settingswindow.voltch2offcb.current() - 4),
-                                                                                               ref1off=127 - 25 * (
-                                                                                                       self.settingswindow.voltref1offcb.current() - 4),
-                                                                                               ref2off=127 - 25 * (
-                                                                                                       self.settingswindow.voltref2offcb.current() - 4))
-        self.dataframe = hameghm1007.createpandasframe(self.timearr, self.ch1, self.ch2, self.ref1, self.ref2)
-        self.timeplotfig,self.timeplotax = hameghm1007.makeplot(self.data, self.ch1, self.ch2, self.ref1, self.ref2, self.timearr)
+        self.dataframe = hameghm1007.createpandasframe(self.data, timeres=self.settingswindow.getsamplinginterval(),
+                                                       ch1res=self.settingswindow.voltages[
+                                                                  self.settingswindow.voltch1cb.current()] / 25,
+                                                       ch2res=self.settingswindow.voltages[
+                                                                  self.settingswindow.voltch2cb.current()] / 25,
+                                                       ref1res=self.settingswindow.voltages[
+                                                                   self.settingswindow.voltref1cb.current()] / 25,
+                                                       ref2res=self.settingswindow.voltages[
+                                                                   self.settingswindow.voltref2cb.current()] / 25,
+                                                       ch1off=127 - 25 * (
+                                                               self.settingswindow.voltch1offcb.current() - 4),
+                                                       ch2off=127 - 25 * (
+                                                               self.settingswindow.voltch2offcb.current() - 4),
+                                                       ref1off=127 - 25 * (
+                                                               self.settingswindow.voltref1offcb.current() - 4),
+                                                       ref2off=127 - 25 * (
+                                                               self.settingswindow.voltref2offcb.current() - 4))
+        self.timeplotfig, self.timeplotax = hameghm1007.makeplot(self.data, self.dataframe)
         return
 
     def savemanual(self):
@@ -133,6 +126,7 @@ class App(tk.Frame):
         self.lasttimestamp = datetime.now()
         self.savedata()
         return
+
     def savedata(self):
         """
         saves current data to files
@@ -166,7 +160,7 @@ class App(tk.Frame):
         self.data = hameghm1007.readfromoszi(ser=ser, mod=mode)
         # self.calcnumpypandasfig()
         self.update_fig()
-        if (self.settingswindow.autosave.get()==1):
+        if (self.settingswindow.autosave.get() == 1):
             self.savedata()
 
         return True
@@ -198,7 +192,7 @@ class App(tk.Frame):
         # Help Menu
 
         self.help_menu = tk.Menu(self.menubar, tearoff=0
-        )
+                                 )
         self.menubar.add_cascade(label="Help", menu=self.help_menu)
 
         self.help_menu.add_command(label='GitHub page', command=lambda: webbrowser.open_new(
@@ -207,7 +201,7 @@ class App(tk.Frame):
         self.scopewindow = scope_gui.ScopeWindow(self)
         self.settingswindow = settings_gui.SettingsWindow(self)
 
-        self.folderlabel = tk.Label(self,textvariable=self.folderdir)
+        self.folderlabel = tk.Label(self, textvariable=self.folderdir)
         self.folderlabel.grid(column=0, row=1, columnspan=2, sticky=tk.W)
         self.update_fig()
 
@@ -219,10 +213,11 @@ class App(tk.Frame):
 def main():
     root = tk.Tk()
     root.geometry("820x500")
-    root.minsize(820,500)
+    root.minsize(820, 500)
     root.title("HAMEG HM1007 Interface")
     app = App(root)
     root.mainloop()
+
 
 if __name__ == '__main__':
     main()
