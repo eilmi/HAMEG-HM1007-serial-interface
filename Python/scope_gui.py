@@ -118,8 +118,9 @@ class ScopeWindow(tk.Frame):
         self.scopefig = Figure(dpi=80)
         self.scopeax = self.scopefig.add_subplot(111)
         self.scope = FigureCanvasTkAgg(self.scopefig, master=self.scopeframe)
-        toolbar = NavigationToolbar2Tk(self.scope, self.scopeframe)
-        toolbar.update()
+        self.toolbar = NavigationToolbar2Tk(self.scope, self.scopeframe)
+
+        self.toolbar.update()
         self.scope.get_tk_widget().config(width=640 / 1.25, height=480 / 1.25)
         # self.scope
         self.scope.get_tk_widget().pack()

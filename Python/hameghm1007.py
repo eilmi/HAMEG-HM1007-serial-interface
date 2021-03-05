@@ -69,8 +69,8 @@ def createnumpyarrays(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
     # ch1_data = np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int)
     # ch2_data = np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int)
     ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - ch2off) * ch2res
-    ref1_data = np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int)
-    ref2_data = np.array(data[begin_Ref2 + 1:]).astype(np.int)
+    ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) -ref1off) * ref1res
+    ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - ref2off)* ref2res
 
     return time_data, ch1_data, ch2_data, ref1_data, ref2_data
 
@@ -170,11 +170,5 @@ def calc_fft(data, time_interval):
     except TypeError:
         print("No data for FFT")
         return False
-
-    figfft, axfft = plt.subplots()
-
-
-    #(1/t_s)/xlim
-    # ax.set_ylim(-5, 110)
 
     return X,freqs

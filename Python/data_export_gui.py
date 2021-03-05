@@ -218,7 +218,8 @@ class App(tk.Frame):
 
 def main():
     root = tk.Tk()
-    root.geometry("800x500")
+    root.geometry("820x500")
+    root.minsize(820,500)
     root.title("HAMEG HM1007 Interface")
     app = App(root)
     root.mainloop()
