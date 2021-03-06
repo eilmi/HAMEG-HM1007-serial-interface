@@ -29,10 +29,12 @@ Although it's not necessary to know how the microcontroller gets all the data fr
 
 > **All the following pin operations are handled by the Arduino itself and do not require any interaction from the user!**
 
-TODO
 
 ### Pictures
-![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Title") | ![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Title")
+| | |
+| --- | --- | 
+|![Bottom of Circuit Board](Pictures/Hameg_Interface_circuit_board_top.png?raw=true "Bottom of circuit board") | ![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Top of circuit board")|
 
+![Alt text](Pictures/Hameg_Interface_with_cable.png?raw=true "Serial interface with case and cables")
 ## Create a CSV file with the provided Python code
 TODO
