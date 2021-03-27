@@ -22,14 +22,24 @@ Sending a 'R' to the serial port opened by the Arduino starts the data read-out 
 
 #### single-shot mode
 When a 'S' is sent to the microcontroller it resets the Single-Shot trigger of the oscilloscope by pulling the *HBRESET* pin to Ground (0V) for a short period of time. Afterwards it waits for the oscilloscope to pull the *TE* pin to Ground to signalize the successful capture of the signal and starts the same read-out process as in normal operation mode.
-
 #### the process of reading out the signal data
 Although it's not necessary to know how the microcontroller gets all the data from the oscilloscope in order to use the program the process is nevertheless described below. 
 
 
 > **All the following pin operations are handled by the Arduino itself and do not require any interaction from the user!**
 
-
+| Step | Pin Operation                      | Info                                               |
+|------|------------------------------------|----------------------------------------------------|
+| 1    | Set SQR to HIGH                    | Request service from scope                         |
+| 2    | Check TE until it´s pulled LOW     | HM1007 indicates ready to transmit                 |
+| 3    | Check X-Y                          | If LOW -> scope in X-Y mode -> skip step 4         |
+| 4    | Capture HB0 to HB7                 | Datalines show baseline position shift (REF. -Pos) |
+| 5    | Pull CLRAC to LOW for a short time | Reset address counter                              |
+| 6    | Set CLKAC to High                  | count address counter up once                      |
+| 7    | Set CLKAC to LOW                   | Falling edge of CLKAC does not do anything         |
+| 8    | Capture HB0 to HB7                 | Datalines show data of byte 0                      |
+| 9    | CLKAC to High, CLKAC to LOW        | Repeat step 6 to 8 for 8191 times                  |
+| 10   | Set SQR back to LOW                | HM1007 returns into normal operation mode          |
 ### Pictures
 | | |
 | --- | --- | 
