@@ -16,7 +16,7 @@ TODO (can also be found in the sourcecode of the C code `PlatformIO/src/main.cpp
 - Only transmits valid data (channel must be shown on oscilloscope's screen to be valid)
 
 ### How it works
-The memory of the scope contains four 2048 byte long data blocks for each of the 4 channels (*CH1,CH2,REF1,REF2*) which regardless of the validness of the data must be read out entirely each time data is read from the oscilloscope.
+The memory of the scope contains four 2048 byte long data blocks. One for each of the 4 channels (*CH1,CH2,REF1,REF2*) which regardless of the validness of the data must be read out entirely each time data is read from the oscilloscope.
 #### normal operation mode
 Sending a 'R' to the serial port opened by the Arduino starts the data read-out process, which is described in more detail below.
 
@@ -43,8 +43,19 @@ Although it's not necessary to know how the microcontroller gets all the data fr
 ### Pictures
 | | |
 | --- | --- | 
-|![Bottom of Circuit Board](Pictures/Hameg_Interface_circuit_board_top.png?raw=true "Bottom of circuit board") | ![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Top of circuit board")|
+|![Bottom of Circuit Board](Pictures/Hameg_Interface_circuit_board_top.png?raw=true "Top of circuit board") | ![Alt text](Pictures/Hameg_Interface_circuit_board_bottom.png?raw=true "Bottom of circuit board")|
 
 ![Alt text](Pictures/Hameg_Interface_with_cable.png?raw=true "Serial interface with case and cables")
-## Create a CSV file with the provided Python code
-TODO
+## Python GUI
+This repository also includes a python program which can be used, to not only visualize the data from the scope, but also store it in a variety of formats.
+> **This section of this README is still under development!**
+
+### How to use the program
+First you need to select the serial port of the Arduino acting as the interface to the oscilloscope from the drop down menu. Alternative you can click *File -> Import Raw Data* to load the data from a previously saved raw log  
+![Python GUI](Pictures/Software/Empty_Interface.png?raw=true "python program with no data loaded")
+
+### Ploting the signal(s)
+![Python GUI](Pictures/Software/Square_Wave_Loaded.png?raw=true "python program with no data loaded")
+
+### Fast Fourier transform
+![Python GUI](Pictures/Software/Square_Wave_FFT.png?raw=true "python program with no data loaded")
