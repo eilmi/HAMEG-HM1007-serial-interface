@@ -55,7 +55,7 @@ First you need to select the serial port of the Arduino acting as the interface 
 ![Python GUI](Pictures/Software/Empty_Interface.png?raw=true "python program with no data loaded")
 
 ### Ploting the signal(s)
-![Python GUI](Pictures/Software/Square_Wave_Loaded.png?raw=true "python program with no data loaded")
+![Python GUI](Pictures/Software/Square_Wave_Loaded.png?raw=true "python program with with square signal")
 
 ### Fast Fourier transform
-![Python GUI](Pictures/Software/Square_Wave_FFT.png?raw=true "python program with no data loaded")
+![Python GUI](Pictures/Software/Square_Wave_FFT.png?raw=true "python program with FFT analysis")

@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 import matplotlib.pylab as plt
 import numpy as np
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
@@ -127,10 +126,6 @@ class ScopeWindow(tk.Frame):
         self.scope.draw()
 
         self.scopeframe.grid(column=0, row=0, columnspan=3, sticky=tk.W + tk.E)
-
-        #self.maxfftslider = tk.Scale(self.frame, from_=10, to=200, orient=tk.HORIZONTAL, command=self.update_fft_x_lims)
-        #self.maxfftslider.grid(column=0, row=1)
-        # self.maxfftslider.pack()
 
         self.toggleplot = tk.Button(self.frame, text="Show FFT", command=self.toggleplot)
         self.toggleplot.grid(column=1, row=1)
