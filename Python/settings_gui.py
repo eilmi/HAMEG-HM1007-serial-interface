@@ -68,7 +68,7 @@ class SettingsWindow(tk.Frame):
         self.timecb.grid(column=1, row=1)
         self.timecb.current(0)
 
-        # time unit selectorS
+        # time unit selectors
         self.timeunitcb = ttk.Combobox(self.frame, values=['s', 'ms', 'us'], width=5)
         self.timeunitcb.grid(column=2, row=1)
         self.timeunitcb.bind('<<ComboboxSelected>>', self.parent.update_fig)

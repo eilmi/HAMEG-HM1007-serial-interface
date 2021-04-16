@@ -8,6 +8,7 @@ import webbrowser
 
 import settings_gui
 import scope_gui
+import signalinfo_gui
 
 ser = serial.Serial()
 
@@ -15,6 +16,7 @@ ser = serial.Serial()
 class App(tk.Frame):
     data = []
     dataframe = []
+    fftframe = []
     comport = ''
     folderdir = ''
 
@@ -54,7 +56,10 @@ class App(tk.Frame):
         self.calcnumpypandasfig()
         t_s = self.settingswindow.getsamplinginterval()
         if "CH1" in self.dataframe:
-            self.X, self.freqs = hameghm1007.calc_fft(self.dataframe.CH1.tolist(), t_s)
+            self.X = self.fftframe.CH1.tolist()
+            self.freqs = self.fftframe.freq.tolist()
+
+            #self.X, self.freqs = hameghm1007.calc_fft(self.dataframe.CH1.tolist(), t_s)
 
         self.scopewindow.plot()
         return
@@ -115,6 +120,8 @@ class App(tk.Frame):
                                                        ref2off=127 - 25 * (
                                                                self.settingswindow.voltref2offcb.current() - 4))
         self.timeplotfig, self.timeplotax = hameghm1007.makeplot(self.data, self.dataframe)
+        self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval())
+        self.signalinfoframe.update_infos()
         return
 
     def savemanual(self):
@@ -200,11 +207,11 @@ class App(tk.Frame):
 
         self.scopewindow = scope_gui.ScopeWindow(self)
         self.settingswindow = settings_gui.SettingsWindow(self)
+        self.signalinfoframe = signalinfo_gui.SignalInfoFrame(self)
 
         self.folderlabel = tk.Label(self, textvariable=self.folderdir)
-        self.folderlabel.grid(column=0, row=1, columnspan=2, sticky=tk.W)
+        self.folderlabel.grid(column=0, row=2, columnspan=2, sticky=tk.W)
         self.update_fig()
-
         self.grid()
 
         return

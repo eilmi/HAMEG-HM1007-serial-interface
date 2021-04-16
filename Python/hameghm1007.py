@@ -162,3 +162,22 @@ def calc_fft(data, time_interval):
         return False
 
     return X,freqs
+
+def calc_fftdataframe(dataframe,samplinginterval):
+    fftframe = pd.DataFrame()
+    if "CH1" in dataframe:
+        X, freqs = calc_fft(dataframe.CH1.tolist(),samplinginterval)
+        X = X * 2 / len(dataframe.CH1.tolist())
+        combined_data = np.vstack((freqs, X)).T
+        fftframe = pd.DataFrame(combined_data, columns=['freq', 'CH1'])
+
+    if "CH2" in dataframe:
+        X, freqs = calc_fft(dataframe.CH2.tolist(),samplinginterval)
+        X = X * 2 / len(dataframe.CH2.tolist())
+        if "freq" not in fftframe:
+            fftframe['freq'] = freqs
+        fftframe['CH2'] = X
+
+    return fftframe
+
+

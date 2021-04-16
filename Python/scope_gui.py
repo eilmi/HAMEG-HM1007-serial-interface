@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
+import hameghm1007
 
 class ScopeWindow(tk.Frame):
     """
@@ -38,13 +38,23 @@ class ScopeWindow(tk.Frame):
         try:
             f_s = 1/self.parent.settingswindow.getsamplinginterval()
             self.scopeax.clear()
-            self.scopeax.stem(self.parent.freqs, np.abs(self.parent.X) * 2 / len(self.parent.dataframe.CH1.tolist()))
+
+            #X,freqs = hameghm1007.calc_fft(self.parent.dataframe.CH1.tolist(),self.parent.settingswindow.getsamplinginterval())
+            #Xcorr = np.abs(X) *2 /len(self.parent.dataframe.CH1.tolist())
+            #self.scopeax.stem(freqs, Xcorr)
+
+
+            self.scopeax.stem(np.abs(self.parent.freqs), np.abs(self.parent.X))
+
             # ax.stem(freqs, X)
             self.scopeax.set_xlabel('Frequency [Hz]')
             self.scopeax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-            self.scopeax.set_xlim(-f_s / 2, f_s / 2)
+            self.scopeax.set_xlim(0, f_s / 2)
 
             self.scope.draw_idle()
+            #amplitudes = np.abs(self.parent.X) *2 /len(self.parent.dataframe.CH1.tolist())
+            #print(np.max(amplitudes[1:1024]))
+            #print(amplitudes[0])
         except AttributeError:
             print("FFT not calculated -> skipped plotting")
         #print(self.parent.freqs[0])
@@ -59,7 +69,7 @@ class ScopeWindow(tk.Frame):
         :return:
         """
 
-        if (self.fft_in_plot.get() == 1):
+        if self.fft_in_plot.get() == 1:
             self.plot_fft()
             plt.close('all')
         return
@@ -131,5 +141,5 @@ class ScopeWindow(tk.Frame):
         self.toggleplot.grid(column=1, row=1)
         # self.toggleplot.pack()
 
-        self.frame.grid(column=1, row=0)
+        self.frame.grid(column=1, row=0,rowspan=2,sticky=tk.NS)
         return
