@@ -69,7 +69,7 @@ class SignalInfoFrame(tk.Frame):
         """
         signal = signal - (np.min(signal) + (np.max(signal) - np.min(signal)) / 2)
         zero_crossings = np.where(np.diff(np.signbit(signal)))[0]
-        print(zero_crossings)
+        #print(zero_crossings)
         duty_cycles = []
         for i in range(0, len(zero_crossings) - 2):
             middle1 = zero_crossings[i] + int((zero_crossings[i + 1] - zero_crossings[i]) / 2)
@@ -81,6 +81,14 @@ class SignalInfoFrame(tk.Frame):
         return duty_cycles
 
     def addprefix(self,number,unit,printprec):
+        """
+        Returns a String consisting of the given value converted into a prefix + SI conform format + given unit
+        for example 0.030 will be converted into 30m + unit
+        :param number: value which should be converted
+        :param unit: suffix will be added to the string
+        :param printprec: number of decimal places
+        :return:
+        """
         a_number = np.abs(number)
         if a_number<1e-6:
             return str(round(number*1e9,printprec))+'n'+unit

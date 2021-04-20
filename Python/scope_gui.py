@@ -55,6 +55,7 @@ class ScopeWindow(tk.Frame):
             #amplitudes = np.abs(self.parent.X) *2 /len(self.parent.dataframe.CH1.tolist())
             #print(np.max(amplitudes[1:1024]))
             #print(amplitudes[0])
+            
         except AttributeError:
             print("FFT not calculated -> skipped plotting")
         #print(self.parent.freqs[0])

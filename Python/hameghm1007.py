@@ -53,6 +53,20 @@ def readfromoszi(ser=None, mod='R'):
 
 def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
                       ref1off=0, ref1res=1, ref2off=0, ref2res=1):
+    """
+    Generates the pandas dataframe out of the raw serial input stream.
+    :param data: raw serial values
+    :param timeres: sampling rate (in seconds) of the channels
+    :param ch1off: offset of CH1 in bits (raw value)
+    :param ch1res: resolution of CH1 in V/bit
+    :param ch2off: offset of CH2 in bits (raw value)
+    :param ch2res: resolution of CH2 in V/bit
+    :param ref1off:
+    :param ref1res:
+    :param ref2off:
+    :param ref2res:
+    :return:
+    """
     # get starting position of all 4 2048 byte long data blocks
     try:
         begin_CH1 = data.index("CH1")
@@ -61,7 +75,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
         begin_Ref2 = data.index("REF2")
     except ValueError:
         print("invalid serial data - couldnt create numpy arrays")
-        return [], [], [], [], []
+        return []
 
     # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
     time_data = np.arange(2048) * timeres
@@ -99,6 +113,12 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
 
 
 def makeplot(data, dataframe):
+    """
+
+    :param data: only needed to check if data is XY-Plot
+    :param dataframe: contains the data of all available channels
+    :return: matplotlib figure
+    """
     fig, ax = plt.subplots()
 
     if "XY-Plot" in data:
@@ -146,7 +166,7 @@ def save(directory, now, data, dataframe, fig):
     return True
 
 
-def calc_fft(data, time_interval):
+def __calc_fft(data, time_interval):
     f_s = 1 / time_interval
 
     try:
@@ -164,15 +184,21 @@ def calc_fft(data, time_interval):
     return X,freqs
 
 def calc_fftdataframe(dataframe,samplinginterval):
+    """
+    Calculate the fast fourier transform of all channels stored in the dataframe
+    :param dataframe: Pandas dataframe containing signal information
+    :param samplinginterval: interval between two signal samples
+    :return:
+    """
     fftframe = pd.DataFrame()
     if "CH1" in dataframe:
-        X, freqs = calc_fft(dataframe.CH1.tolist(),samplinginterval)
+        X, freqs = __calc_fft(dataframe.CH1.tolist(),samplinginterval)
         X = X * 2 / len(dataframe.CH1.tolist())
         combined_data = np.vstack((freqs, X)).T
         fftframe = pd.DataFrame(combined_data, columns=['freq', 'CH1'])
 
     if "CH2" in dataframe:
-        X, freqs = calc_fft(dataframe.CH2.tolist(),samplinginterval)
+        X, freqs = __calc_fft(dataframe.CH2.tolist(),samplinginterval)
         X = X * 2 / len(dataframe.CH2.tolist())
         if "freq" not in fftframe:
             fftframe['freq'] = freqs

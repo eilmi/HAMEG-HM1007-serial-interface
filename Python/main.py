@@ -99,7 +99,12 @@ class App(tk.Frame):
 
     def calcnumpypandasfig(self):
         """
+        Calculates a pandas dataframe out of the raw values received from the arduino.
+        Uses the values from the selectors in the GUI to convert them into voltages.
 
+        Afterwards a matplotlib figure will be generated, followed by a fast fourier transform.
+
+        Finally the signal infos on the screen will be updated.
         :return: nothing
         """
         self.dataframe = hameghm1007.createpandasframe(self.data, timeres=self.settingswindow.getsamplinginterval(),
@@ -120,7 +125,7 @@ class App(tk.Frame):
                                                        ref2off=127 - 25 * (
                                                                self.settingswindow.voltref2offcb.current() - 4))
         self.timeplotfig, self.timeplotax = hameghm1007.makeplot(self.data, self.dataframe)
-        self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval())
+        self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
         self.signalinfoframe.update_infos()
         return
 
@@ -150,7 +155,6 @@ class App(tk.Frame):
 
     def readfromoszi(self, mode='R'):
         """
-
         :param mode: 'R' for normal data readout and 'S' for singleshotmode
         :return: True is data is successfully read from oscilloscope
         """
