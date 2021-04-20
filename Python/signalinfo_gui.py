@@ -67,9 +67,12 @@ class SignalInfoFrame(tk.Frame):
         :param signal: signal of which the duty cycle should be determined
         :return: array of all calculated duty cycles
         """
-        signal = signal - (np.min(signal) + (np.max(signal) - np.min(signal)) / 2)
-        zero_crossings = np.where(np.diff(np.signbit(signal)))[0]
+
+        signal = signal - (np.min(signal) + (np.max(signal) - np.min(signal)) / 2) #shift function for zero crossing detection
+        zero_crossings = np.where(np.diff(np.signbit(signal)))[0] #find zero crossings
         #print(zero_crossings)
+
+        #Calculate duty cycles
         duty_cycles = []
         for i in range(0, len(zero_crossings) - 2):
             middle1 = zero_crossings[i] + int((zero_crossings[i + 1] - zero_crossings[i]) / 2)
@@ -84,10 +87,11 @@ class SignalInfoFrame(tk.Frame):
         """
         Returns a String consisting of the given value converted into a prefix + SI conform format + given unit
         for example 0.030 will be converted into 30m + unit
+
         :param number: value which should be converted
         :param unit: suffix will be added to the string
         :param printprec: number of decimal places
-        :return:
+        :return: string with prefix value and unit 
         """
         a_number = np.abs(number)
         if a_number<1e-6:
@@ -119,18 +123,16 @@ class SignalInfoFrame(tk.Frame):
         channelname=(list(self.values.items())[self.channelselector.get()][0]) # get name of selected channel
         if channelname in self.parent.fftframe: #check if data for this channel is available
             self.signaldcoffset.set(self.addprefix(np.real(self.parent.fftframe[channelname][0]),"V",3)) # get DC-offset out of FFT
+
             #Look for biggest peak in FFT and get the frequency of it
             freqency = self.parent.fftframe["freq"][1+np.abs(self.parent.fftframe[channelname][1:1024]).argmax()]
-            self.signalfreq.set(self.addprefix(np.abs(freqency),"Hz",3))
-            self.signalperiod.set(self.addprefix(1/np.abs(freqency),"s",3))
+            self.signalfreq.set(self.addprefix(np.abs(freqency),"Hz",3)) # set frequency in GUI
+            self.signalperiod.set(self.addprefix(1/np.abs(freqency),"s",3)) # set period time in GUI
 
             #Calculate Duty Cycles
-            signal = self.parent.dataframe[channelname]
-            duty_cycles = self.calc_duty_cycle(signal)
+            signal = self.parent.dataframe[channelname] # get signal data for selected channel
+            duty_cycles = self.calc_duty_cycle(signal) # calculate duty cycle of this signal
 
-            self.signaldutycycle.set(str(np.mean(duty_cycles)*100)+"%")
-            #print(np.abs(freqency),self.addprefix(np.abs(freqency),"Hz",3))
-
-
+            self.signaldutycycle.set(str(np.mean(duty_cycles)*100)+"%") # set duty cycle in GUI
 
         return

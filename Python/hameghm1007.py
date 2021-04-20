@@ -16,6 +16,7 @@ def readfromfile(filename):
     """
     read the data normally received from the oscilloscope out of a text file
     these text files are be default created when scope data is saved
+
     :param filename: name of the to be loaded file
     :return: oscilloscope data list
     """
@@ -61,7 +62,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
     :param ch1res: resolution of CH1 in V/bit
     :param ch2off: offset of CH2 in bits (raw value)
     :param ch2res: resolution of CH2 in V/bit
-    :param ref1off:
+    :param ref1off:  
     :param ref1res:
     :param ref2off:
     :param ref2res:
@@ -114,6 +115,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
 
 def makeplot(data, dataframe):
     """
+    generate and returns a matplotlib figure containing all available channels
 
     :param data: only needed to check if data is XY-Plot
     :param dataframe: contains the data of all available channels
@@ -141,7 +143,14 @@ def makeplot(data, dataframe):
     return fig,ax
 
 
-def save(directory, now, data, dataframe, fig):
+def save(directory, now, data, dataframe):
+    """
+    creates a new folder in the given directory and saves the data in various forms
+    generates a CSV file and a PNG picture while also saving the raw serial message from the Interface (Arduino)
+
+    :return: True when everything could be saved
+    """
+    fig, ax = makeplot(data, dataframe)
     di = directory + now.strftime("\HM1007_export-%Y_%m_%d-%H_%M_%S")
     try:
         os.mkdir(di)
@@ -167,6 +176,12 @@ def save(directory, now, data, dataframe, fig):
 
 
 def __calc_fft(data, time_interval):
+    """
+    internal function used to calculate the fft
+
+    :param data: data on which the fft should be performed
+    :param time_interval: time interval between two data points
+    """
     f_s = 1 / time_interval
 
     try:
@@ -186,23 +201,21 @@ def __calc_fft(data, time_interval):
 def calc_fftdataframe(dataframe,samplinginterval):
     """
     Calculate the fast fourier transform of all channels stored in the dataframe
+
     :param dataframe: Pandas dataframe containing signal information
     :param samplinginterval: interval between two signal samples
     :return:
     """
     fftframe = pd.DataFrame()
-    if "CH1" in dataframe:
-        X, freqs = __calc_fft(dataframe.CH1.tolist(),samplinginterval)
-        X = X * 2 / len(dataframe.CH1.tolist())
-        combined_data = np.vstack((freqs, X)).T
-        fftframe = pd.DataFrame(combined_data, columns=['freq', 'CH1'])
 
-    if "CH2" in dataframe:
-        X, freqs = __calc_fft(dataframe.CH2.tolist(),samplinginterval)
-        X = X * 2 / len(dataframe.CH2.tolist())
+    for column in dataframe: # calculate fft for each channel in dataframe (CH1,CH2,REF1,REF2)
+        if column=="time":
+            continue
+        X, freqs = __calc_fft(dataframe[column].tolist(),samplinginterval)
+        X = X * 2 / len(dataframe[column].tolist())
         if "freq" not in fftframe:
             fftframe['freq'] = freqs
-        fftframe['CH2'] = X
+        fftframe[column] = X
 
     return fftframe
 

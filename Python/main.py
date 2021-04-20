@@ -102,9 +102,10 @@ class App(tk.Frame):
         Calculates a pandas dataframe out of the raw values received from the arduino.
         Uses the values from the selectors in the GUI to convert them into voltages.
 
-        Afterwards a matplotlib figure will be generated, followed by a fast fourier transform.
+        Afterwards a fast fourier transform will be calculated for each channel.
 
         Finally the signal infos on the screen will be updated.
+
         :return: nothing
         """
         self.dataframe = hameghm1007.createpandasframe(self.data, timeres=self.settingswindow.getsamplinginterval(),
@@ -124,9 +125,9 @@ class App(tk.Frame):
                                                                self.settingswindow.voltref1offcb.current() - 4),
                                                        ref2off=127 - 25 * (
                                                                self.settingswindow.voltref2offcb.current() - 4))
-        self.timeplotfig, self.timeplotax = hameghm1007.makeplot(self.data, self.dataframe)
+
         self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
-        self.signalinfoframe.update_infos()
+        self.signalinfoframe.update_infos() #Update signal infos on GUI
         return
 
     def savemanual(self):
@@ -149,7 +150,7 @@ class App(tk.Frame):
             print("No data -> not saving")
             return False
 
-        hameghm1007.save(self.folderdir.get(), self.lasttimestamp, self.data, self.dataframe, self.timeplotfig)
+        hameghm1007.save(self.folderdir.get(), self.lasttimestamp, self.data, self.dataframe)
         print("data saved")
         return True
 
@@ -177,7 +178,9 @@ class App(tk.Frame):
         return True
 
     def __init__(self, parent, *args, **kwargs):
-
+        """
+        init function
+        """
         self.lasttimestamp = datetime.now()
         self.folderdir = tk.StringVar()
         self.folderdir.set(os.getcwd())
