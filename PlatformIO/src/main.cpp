@@ -29,17 +29,31 @@ D12 (PB4) <-> HBRESET (reset single shot) (23)
 
 
 #include <Arduino.h>
+#define DATALINES ((PINC&0b111111)|(PIND&(0b1100))<<4)
 
 const char* Channelnames[]={"CH1","CH2","REF1","REF2"};
 
 void readfromoszi(){
-  // ------------------------ Initialize Oszilloskop ------------------------------
-  PORTB|=0b100; // SET SRQ to HIGH to signal Oszilloskop that we want data from it (blanks screen of Oszilloskop)
+  // ------------------------ Read oszilloskop ID ---------------------------------
+  int oid = DATALINES;
+  switch (oid)
+  {
+  case 12:
+    Serial.println("HM-1007");
+    break;
+  
+  default:
+    Serial.print("Unknown 'ID");Serial.println(oid);
+    break;
+  }
+
+  // ------------------------ Initialize oszilloskop ------------------------------
+  PORTB|=0b100; // SET SRQ to HIGH to signal oszilloskop that we want data from it (blanks screen of oszilloskop)
   delay(10);
   while((PIND&(1<<7))); //Wait until oszilloskop pull`s TE pin low to signal it is ready
 
   if (PIND&(1<<6)){ //Check if XY-Plot is enabled
-    int value = (PINC&0b111111)|(PIND&(0b1100))<<4; //get reference-position
+    int value = DATALINES; //get reference-position
     Serial.println("Ref. Pos:");Serial.println(value);
   }
   else{
@@ -60,14 +74,14 @@ void readfromoszi(){
       _delay_us(80);
       PORTB=PORTB&(~(1<<1)); //falling edge for counter - does not do anything
 
-      int value = (PINC&0b111111)|((PIND&(0b1100))<<4); //reading the data from the bus
+      int value = DATALINES; //reading the data from the bus
       if (isvalid) //check if oszilloskop signaled that the data is valid on previous address
         Serial.println(value);
     
       _delay_us(40);
     }
   }
-  PORTB=PORTB& ~(0b100); //set SRQ to LOW to return Oszilloskop into normal operation mode 
+  PORTB=PORTB& ~(0b100); //set SRQ to LOW to return oszilloskop into normal operation mode 
   Serial.println("END");
 }
 
