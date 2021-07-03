@@ -79,10 +79,9 @@ class App(tk.Frame):
         ser.port = self.comport  # COM port of arduino
         ser.baudrate = 250000
         ser.open()
-        print("connected to" + self.comport)
-
-
-        #TODO get model
+        hameghm1007.readmodelfromInterface(ser=ser)
+        
+        print("connected to" + hameghm1007.oscilloscopemodel+"on" + self.comport)
         return
 
     def on_select_time(self, event=None):

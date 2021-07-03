@@ -1,7 +1,7 @@
 /*
-This program gets all of the available data from a HAMEG HM1007 oszilloskop and transmits it over serial 
+This program gets all of the available data from a HAMEG HM1007 or HM205-3 oszilloskop and transmits it over serial 
 
-written by Philipp Eilmsteiner, 27.01.2021
+written by Philipp Eilmsteiner, 03.07.2021
 */
 
 /*
