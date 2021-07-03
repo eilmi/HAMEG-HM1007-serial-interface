@@ -32,20 +32,32 @@ D12 (PB4) <-> HBRESET (reset single shot) (23)
 #define DATALINES ((PINC&0b111111)|(PIND&(0b1100))<<4)
 
 const char* Channelnames[]={"CH1","CH2","REF1","REF2"};
+int chcount = 2;
+//String modelname ="";
 
-void readfromoszi(){
-  // ------------------------ Read oszilloskop ID ---------------------------------
+
+void sendModel(){
   int oid = DATALINES;
-  switch (oid)
-  {
-  case 12:
-    Serial.println("HM-1007");
-    break;
-  
-  default:
-    Serial.print("Unknown 'ID");Serial.println(oid);
+  switch (oid){
+    case 2:
+      //modelname="HM-1007";
+      Serial.println("HM-1007");
+      chcount=4;
+      break;
+
+    default:
+    //modelname="unknown";
+    Serial.println("unknown");
+    chcount=2;
     break;
   }
+}
+
+void readfromoszi(){
+
+
+  // ------------------------ Read oszilloskop ID ---------------------------------
+  sendModel();
 
   // ------------------------ Initialize oszilloskop ------------------------------
   PORTB|=0b100; // SET SRQ to HIGH to signal oszilloskop that we want data from it (blanks screen of oszilloskop)
@@ -65,7 +77,7 @@ void readfromoszi(){
 
   // ------------- Read all 4 buffers -------------------
   bool isvalid;
-  for (int x=0;x<=3;x++){
+  for (int x=0;x<chcount;x++){
     Serial.println(Channelnames[x]);
     for (int i=0;i<=2047;i++){
 
@@ -106,13 +118,22 @@ void readsingleshoot(){
   readfromoszi();
 }
 
+void sendid(){
+  Serial.println(DATALINES);
+}
+
 void loop() {
   if (Serial.available()>0){
     int receive = Serial.read();
     if (receive=='R')
       readfromoszi();
+
     if (receive=='S'){
       readsingleshoot();
     }
+    if (receive=='i')
+      sendid();
+    if (receive=='m')
+      sendModel();
   }
 }

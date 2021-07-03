@@ -50,6 +50,7 @@ class SettingsWindow(tk.Frame):
         self.parent = parent
         self.frame = tk.Frame(self.parent)
 
+        self.scopemodel = tk.StringVar()
         self.saverawlog = tk.IntVar(value=1)
         self.savecsv = tk.IntVar(value=1)
         self.saveimg = tk.IntVar(value=1)
@@ -61,92 +62,96 @@ class SettingsWindow(tk.Frame):
         self.comcb.grid(row=0, column=1)
         self.comcb.bind('<<ComboboxSelected>>', self.parent.on_select_com_port)
 
+        #
+        tk.Label(self.frame, text="scope model:").grid(column=0, row=1)
+        tk.Label(self.frame,textvariable=self.scopemodel).grid(column=1,row=1)
+
         # time selector
-        tk.Label(self.frame, text="Time per Division:").grid(column=0, row=1)
+        tk.Label(self.frame, text="Time per Division:").grid(column=0, row=2)
         self.timecb = ttk.Combobox(self.frame, values=['50', '20', '10', '5', '2', '1', '.5', '.2', '.1'], width=5)
         self.timecb.bind('<<ComboboxSelected>>', self.parent.on_select_time)
-        self.timecb.grid(column=1, row=1)
+        self.timecb.grid(column=1, row=2)
         self.timecb.current(0)
 
         # time unit selectors
         self.timeunitcb = ttk.Combobox(self.frame, values=['s', 'ms', 'us'], width=5)
-        self.timeunitcb.grid(column=2, row=1)
+        self.timeunitcb.grid(column=2, row=2)
         self.timeunitcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
         self.timeunitcb.current(1)
 
         # voltage selector CH1
-        tk.Label(self.frame, text="Volts per Division (CH1):").grid(column=0, row=2)
+        tk.Label(self.frame, text="Volts per Division (CH1):").grid(column=0, row=3)
         self.voltch1cb = ttk.Combobox(self.frame, values=self.voltage_names, width=5)
-        self.voltch1cb.grid(column=1, row=2)
+        self.voltch1cb.grid(column=1, row=3)
         self.voltch1cb.current(2)
         self.voltch1cb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage selector CH2
-        tk.Label(self.frame, text="Volts per Division (CH2):").grid(column=0, row=3)
+        tk.Label(self.frame, text="Volts per Division (CH2):").grid(column=0, row=4)
         self.voltch2cb = ttk.Combobox(self.frame, values=self.voltage_names, width=5)
-        self.voltch2cb.grid(column=1, row=3)
+        self.voltch2cb.grid(column=1, row=4)
         self.voltch2cb.current(2)
         self.voltch2cb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage selector REF1
-        tk.Label(self.frame, text="Volts per Division (REF1):").grid(column=0, row=4)
+        tk.Label(self.frame, text="Volts per Division (REF1):").grid(column=0, row=5)
         self.voltref1cb = ttk.Combobox(self.frame, values=self.voltage_names, width=5)
-        self.voltref1cb.grid(column=1, row=4)
+        self.voltref1cb.grid(column=1, row=5)
         self.voltref1cb.current(2)
         self.voltref1cb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage selector REF2
-        tk.Label(self.frame, text="Volts per Division (REF2):").grid(column=0, row=5)
+        tk.Label(self.frame, text="Volts per Division (REF2):").grid(column=0, row=6)
         self.voltref2cb = ttk.Combobox(self.frame, values=self.voltage_names, width=5)
-        self.voltref2cb.grid(column=1, row=5)
+        self.voltref2cb.grid(column=1, row=6)
         self.voltref2cb.current(2)
         self.voltref2cb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage offset CH1
         self.voltch1offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
-        self.voltch1offcb.grid(column=2, row=2)
+        self.voltch1offcb.grid(column=2, row=3)
         self.voltch1offcb.current(4)
         self.voltch1offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage offset CH2
         self.voltch2offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
-        self.voltch2offcb.grid(column=2, row=3)
+        self.voltch2offcb.grid(column=2, row=4)
         self.voltch2offcb.current(4)
         self.voltch2offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage offset REF1
         self.voltref1offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
-        self.voltref1offcb.grid(column=2, row=4)
+        self.voltref1offcb.grid(column=2, row=5)
         self.voltref1offcb.current(4)
         self.voltref1offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # voltage offset REF2
         self.voltref2offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
-        self.voltref2offcb.grid(column=2, row=5)
+        self.voltref2offcb.grid(column=2, row=6)
         self.voltref2offcb.current(4)
         self.voltref2offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
 
         # button to read from oscilloscope
         self.buttonreadsingle = tk.Button(self.frame, text="Read from scope", command=lambda: (self.parent.readfromoszi(mode='R')))
-        self.buttonreadsingle.grid(column=0, row=6, columnspan=2, sticky=tk.W + tk.E)
+        self.buttonreadsingle.grid(column=0, row=7, columnspan=2, sticky=tk.W + tk.E)
 
         self.buttonreadsingleshot = tk.Button(self.frame, text="Reset Single-Shot + Read",
                                               command=lambda: (self.parent.readfromoszi(mode='S')))
-        self.buttonreadsingleshot.grid(column=0, row=7, columnspan=2, sticky=tk.W + tk.E)
+        self.buttonreadsingleshot.grid(column=0, row=8, columnspan=2, sticky=tk.W + tk.E)
 
-        tk.Label(self.frame, text="Things to save:").grid(column=0, row=8)
+        tk.Label(self.frame, text="Things to save:").grid(column=0, row=9)
         self.saverawlogcb = tk.Checkbutton(self.frame,text="raw log", variable=self.saverawlog)
-        self.saverawlogcb.grid(column=0, row=9)
+        self.saverawlogcb.grid(column=0, row=10)
         self.savecsvcb = tk.Checkbutton(self.frame,text="csv", variable=self.savecsv)
-        self.savecsvcb.grid(column=1, row=9)
+        self.savecsvcb.grid(column=1, row=10)
         self.saveimgcb = tk.Checkbutton(self.frame,text="png", variable=self.saveimg)
-        self.saveimgcb.grid(column=2, row=9)
+        self.saveimgcb.grid(column=2, row=10)
 
         self.savebutton = tk.Button(self.frame,text="Save", command=self.parent.savemanual)
-        self.savebutton.grid(column=0, row=10)
+        self.savebutton.grid(column=0, row=11)
 
         self.saveimgcb = tk.Checkbutton(self.frame,text="save automatically", variable=self.autosave)
-        self.saveimgcb.grid(column=1, row=10)
+        self.saveimgcb.grid(column=1, row=11)
 
         self.frame.grid(column=0,row=0,sticky=tk.N)
         return

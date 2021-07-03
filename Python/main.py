@@ -45,6 +45,7 @@ class App(tk.Frame):
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
         # self.lasttimestamp = datetime.now()
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
         self.update_fig()
         return True
 
@@ -79,6 +80,9 @@ class App(tk.Frame):
         ser.baudrate = 250000
         ser.open()
         print("connected to" + self.comport)
+
+
+        #TODO get model
         return
 
     def on_select_time(self, event=None):
@@ -174,7 +178,8 @@ class App(tk.Frame):
         self.update_fig()
         if (self.settingswindow.autosave.get() == 1):
             self.savedata()
-
+        
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
         return True
 
     def __init__(self, parent, *args, **kwargs):
@@ -228,7 +233,7 @@ def main():
     root = tk.Tk()
     root.geometry("820x500")
     root.minsize(820, 500)
-    root.title("HAMEG HM1007 Interface")
+    root.title("HAMEG Bus Interface")
     app = App(root)
     root.mainloop()
 

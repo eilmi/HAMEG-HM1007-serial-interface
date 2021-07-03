@@ -10,7 +10,15 @@ from datetime import datetime
 import time
 from scipy import fftpack
 
+oscilloscopemodel = ''
 
+def __storescopemodel(serialdata):
+    global oscilloscopemodel
+    if serialdata[0]=="HM-1007":
+        oscilloscopemodel="HM-1007"
+    else:
+        oscilloscopemodel="unknown"
+    return
 
 def readfromfile(filename):
     """
@@ -25,6 +33,7 @@ def readfromfile(filename):
         for l in fp:
             line.append(l.strip())
     fp.close()
+    __storescopemodel(line)
     return line
 
 
@@ -38,8 +47,7 @@ def readfromoszi(ser=None, mod='R'):
     if (mod == 'R'):
         ser.write(b'R')
     elif (mod == 'S'):
-        ser.write(b'S')
-        # ser.write(b'S') #Reset Single-Shot trigger before reading data from oscilloscope
+        ser.write(b'S') #Reset Single-Shot trigger before reading data from oscilloscope
 
     data = []
     while 1:
@@ -49,6 +57,7 @@ def readfromoszi(ser=None, mod='R'):
             break
         else:
             data.append(inp)
+    __storescopemodel(data)
     return data
 
 
@@ -85,6 +94,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
     ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) -ref1off) * ref1res
     ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - ref2off)* ref2res
 
+    #create pandas dataframe with all valid data
     pandasframe = pd.DataFrame()
     if np.size(ch1_data) == 2048 and np.size(ch2_data) == 2048:
         if np.size(ref1_data) == 2048:
