@@ -205,12 +205,11 @@ class App(tk.Frame):
         )
         # Help Menu
 
-        self.help_menu = tk.Menu(self.menubar, tearoff=0
-                                 )
+        self.help_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Help", menu=self.help_menu)
 
-        self.help_menu.add_command(label='GitHub page', command=lambda: webbrowser.open_new(
-            'https://github.com/eilmi/HAMEG-HM1007-serial-interface'))
+        self.help_menu.add_command(label='GitHub page', 
+                                    command=lambda: webbrowser.open_new('https://github.com/eilmi/HAMEG-HM1007-serial-interface'))
 
         self.scopewindow = scope_gui.ScopeWindow(self)
         self.settingswindow = settings_gui.SettingsWindow(self)

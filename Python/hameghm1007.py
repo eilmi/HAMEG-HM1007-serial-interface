@@ -1,13 +1,8 @@
-import serial
-import time
 import os
-import csv
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from datetime import datetime
-import time
 from scipy import fftpack
 
 
@@ -62,7 +57,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
     :param ch1res: resolution of CH1 in V/bit
     :param ch2off: offset of CH2 in bits (raw value)
     :param ch2res: resolution of CH2 in V/bit
-    :param ref1off:  
+    :param ref1off:
     :param ref1res:
     :param ref2off:
     :param ref2res:
@@ -76,7 +71,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
         begin_Ref2 = data.index("REF2")
     except ValueError:
         print("invalid serial data - couldnt create numpy arrays")
-        return []
+        return pd.DataFrame()
 
     # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
     time_data = np.arange(2048) * timeres
@@ -218,5 +213,3 @@ def calc_fftdataframe(dataframe,samplinginterval):
         fftframe[column] = X
 
     return fftframe
-
-
