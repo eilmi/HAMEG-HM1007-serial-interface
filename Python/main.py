@@ -46,6 +46,15 @@ class App(tk.Frame):
         self.data = hameghm1007.readfromfile(filedir)
         # self.lasttimestamp = datetime.now()
         self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+
+
+        te = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
+        self.settingswindow.voltref1cb["state"] = te
+        self.settingswindow.voltref1offcb["state"] = te
+        self.settingswindow.voltref2cb["state"] = te
+        self.settingswindow.voltref2offcb["state"] = te
+        self.settingswindow.getoffsetref1btn["state"] = te
+        self.settingswindow.getoffsetref2btn["state"] = te
         self.update_fig()
         return True
 
@@ -122,10 +131,8 @@ class App(tk.Frame):
                                                                    self.settingswindow.voltref2cb.current()] / 25,
                                                        ch1off=self.settingswindow.ch1rawoffset,
                                                        ch2off=self.settingswindow.ch2rawoffset,
-                                                       ref1off=127 - 25 * (
-                                                               self.settingswindow.voltref1offcb.current() - 4),
-                                                       ref2off=127 - 25 * (
-                                                               self.settingswindow.voltref2offcb.current() - 4))
+                                                       ref1off=self.settingswindow.ref1rawoffset,
+                                                       ref2off=self.settingswindow.ref2rawoffset)
 
         self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
         self.signalinfoframe.update_infos() #Update signal infos on GUI
@@ -177,6 +184,11 @@ class App(tk.Frame):
             self.savedata()
         
         self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+
+        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
+        #if hameghm1007.oscilloscopemodel=="HM-205:":
+        #    self.settingswindow.voltref1cb["state"]=tk.DISABLED
+        #    self.settingswindow.voltref1offcb["state"]=tk.DISABLED
         return True
 
     def __init__(self, parent, *args, **kwargs):
@@ -225,11 +237,17 @@ class App(tk.Frame):
 
         return
     
-    def calcoffsets(self,ch):
-        if (self.comport==''):
-            print ("Please select COM port first")
-        else:
-            da = hameghm1007.readfromoszi(ser)
+    def getrawdata(self):
+        """
+        returns the raw output from the serial interface
+        """
+        #if (self.comport==''):
+        #    print ("Please select COM port first")
+        #else:
+            #data = hameghm1007.readfromoszi(ser)
+        dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
+        print("Warning! Reading offset from file")
+        return dat
 
         return
 

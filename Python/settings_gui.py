@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import serial
+import numpy as np
 
 
 class SettingsWindow(tk.Frame):
@@ -39,7 +40,7 @@ class SettingsWindow(tk.Frame):
 
     def updaterawoffsetsandfig(self,event=None):
         """
-
+        Updates the raw offset values corresponding to the values chosen in the dropdown menus and redraws the figure
         """
         self.ch1rawoffset=127 - 25 * (self.voltch1offcb.current() - 4)
         self.ch2rawoffset=127 - 25 * (self.voltch2offcb.current() - 4)
@@ -54,8 +55,41 @@ class SettingsWindow(tk.Frame):
         read in the data from the oscilloscope and use it to determine the current DC offset
         """
 
-        da=self.parent.calcoffsets(ch)
-        #self.parent.update_fig()
+        da=self.parent.getrawdata()
+        try:
+            begin_CH1 = da.index("CH1")
+            begin_CH2 = da.index("CH2")
+            begin_Ref1 = da.index("REF1")
+            begin_Ref2 = da.index("REF2")
+        except ValueError:
+            print("invalid serial data - coudn`t set offset")
+            return
+        
+        if ch=="CH1":
+            arr = np.array(da[begin_CH1 + 1:begin_CH2]).astype(np.int)
+            if len(arr)==2048 or len(arr)==1024:
+                self.ch1rawoffset=np.mean(arr,dtype=np.int)
+                self.voltch1offcb.set("")
+
+        if ch=="CH2":
+            arr = np.array(da[begin_CH2 + 1:begin_Ref1]).astype(np.int)
+            if len(arr)==2048 or len(arr)==1024:
+                self.ch2rawoffset=np.mean(arr,dtype=np.int)
+                self.voltch2offcb.set("")
+
+        if ch=="REF1":
+            arr = np.array(da[begin_Ref1 + 1:begin_Ref2]).astype(np.int)
+            if len(arr)==2048 or len(arr)==1024:
+                self.ref1rawoffset=np.mean(arr,dtype=int)
+                self.voltref1offcb.set("")
+
+        if ch=="REF2":
+            arr = np.array(da[begin_Ref2 + 1:]).astype(np.int)
+            if len(arr)==2048 or len(arr)==1024:
+                self.ref2rawoffset=np.mean(arr,dtype=int)
+                self.voltref2offcb.set("")
+
+        self.parent.update_fig()
         return
 
     def __init__(self, parent, *args, **kwargs):
@@ -160,14 +194,14 @@ class SettingsWindow(tk.Frame):
         self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='CH1')))
         self.getoffsetch1btn.grid(column=3,row=3)
 
-        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='CH2')))
-        self.getoffsetch1btn.grid(column=3,row=4)
+        self.getoffsetch2btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='CH2')))
+        self.getoffsetch2btn.grid(column=3,row=4)
 
-        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF1')))
-        self.getoffsetch1btn.grid(column=3,row=5)
+        self.getoffsetref1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF1')))
+        self.getoffsetref1btn.grid(column=3,row=5)
 
-        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF2')))
-        self.getoffsetch1btn.grid(column=3,row=6)
+        self.getoffsetref2btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF2')))
+        self.getoffsetref2btn.grid(column=3,row=6)
 
 
         # button to read from oscilloscope

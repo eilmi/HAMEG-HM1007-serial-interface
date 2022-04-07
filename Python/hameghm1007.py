@@ -23,13 +23,16 @@ def __storescopemodel(serialdata):
     if serialdata[0]=="HM-1007":
         oscilloscopemodel="HM-1007"
         horizontalresolution=2048
+    elif serialdata[0]=="HM-205":
+        oscilloscopemodel="HM-205"
+        horizontalresolution=1024
     else:
         oscilloscopemodel="unknown"
-        horizontalresolution=1024
+        horizontalresolution=2048
         
     return
 
-def readfromfile(filename):
+def readfromfile(filename,setModel=True):
     """
     read the data normally received from the oscilloscope out of a text file
     these text files are be default created when scope data is saved
@@ -42,7 +45,8 @@ def readfromfile(filename):
         for l in fp:
             line.append(l.strip())
     fp.close()
-    __storescopemodel(line)
+    if setModel:
+        __storescopemodel(line)
     return line
 
 
