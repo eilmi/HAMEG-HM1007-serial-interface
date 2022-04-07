@@ -11,13 +11,22 @@ import time
 from scipy import fftpack
 
 oscilloscopemodel = ''
+horizontalresolution = None
 
 def __storescopemodel(serialdata):
+    """
+    reads serial data received from the microcontroller and stores received oscilloscope type
+    :return: 
+    """
     global oscilloscopemodel
+    global horizontalresolution
     if serialdata[0]=="HM-1007":
         oscilloscopemodel="HM-1007"
+        horizontalresolution=2048
     else:
         oscilloscopemodel="unknown"
+        horizontalresolution=1024
+        
     return
 
 def readfromfile(filename):
@@ -60,10 +69,10 @@ def readfromoszi(ser=None, mod='R'):
     __storescopemodel(data)
     return data
 
-def readmodelfromInterface(ser=None):
+#def readmodelfromInterface(ser=None):
     #ser.write(b'm')
     #__storescopemodel(ser.readline().rstrip.decode())
-    return
+#    return
 
 
 def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
@@ -82,7 +91,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
     :param ref2res:
     :return:
     """
-    # get starting position of all 4 2048 byte long data blocks
+    # get starting position of all 4 2048 or 1024 byte long data blocks
     try:
         begin_CH1 = data.index("CH1")
         begin_CH2 = data.index("CH2")
@@ -93,7 +102,7 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
         return []
 
     # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
-    time_data = np.arange(2048) * timeres
+    time_data = np.arange(horizontalresolution) * timeres
     ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - ch1off) * ch1res
     ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - ch2off) * ch2res
     ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) -ref1off) * ref1res
@@ -101,8 +110,8 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
 
     #create pandas dataframe with all valid data
     pandasframe = pd.DataFrame()
-    if np.size(ch1_data) == 2048 and np.size(ch2_data) == 2048:
-        if np.size(ref1_data) == 2048:
+    if np.size(ch1_data) == horizontalresolution and np.size(ch2_data) == horizontalresolution:
+        if np.size(ref1_data) == horizontalresolution:
             combined_data = np.vstack((time_data, ch1_data, ch2_data, ref1_data, ref2_data)).T
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH1', 'CH2', 'REF1', 'REF2'])
         else:
@@ -110,15 +119,15 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH1', 'CH2'])
 
 
-    elif (np.size(ch1_data) == 2048 and np.size(ch2_data) != 2048):
-        if np.size(ref1_data) == 2048:
+    elif (np.size(ch1_data) == horizontalresolution and np.size(ch2_data) != horizontalresolution):
+        if np.size(ref1_data) == horizontalresolution:
             combined_data = np.vstack((time_data, ch1_data, ref1_data)).T
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH1', 'REF1'])
         else:
             combined_data = np.vstack((time_data, ch1_data)).T
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH1'])
-    elif (np.size(ch1_data) != 2048 and np.size(ch2_data) == 2048):
-        if (np.size(ref2_data) == 2048):
+    elif (np.size(ch1_data) != horizontalresolution and np.size(ch2_data) == horizontalresolution):
+        if (np.size(ref2_data) == horizontalresolution):
             combined_data = np.vstack((time_data, ch2_data, ref2_data)).T
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH2', 'REF2'])
         else:

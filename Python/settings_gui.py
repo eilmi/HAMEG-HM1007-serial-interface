@@ -50,11 +50,12 @@ class SettingsWindow(tk.Frame):
 
     def readinoffsets(self,ch):
         """
+        TODO
         read in the data from the oscilloscope and use it to determine the current DC offset
         """
 
-        self.parent.calcoffsets(ch)
-        self.parent.update_fig()
+        da=self.parent.calcoffsets(ch)
+        #self.parent.update_fig()
         return
 
     def __init__(self, parent, *args, **kwargs):

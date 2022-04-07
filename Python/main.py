@@ -51,7 +51,7 @@ class App(tk.Frame):
 
     def update_fig(self, event=None):
         """
-        :param event: needed because it´s executed when selection in combobox is made
+        :param event: needed because it`s executed when selection in combobox is made
         :return: nothing
         """
         self.calcnumpypandasfig()
@@ -70,7 +70,7 @@ class App(tk.Frame):
         is executed whenever a serial port from the combobox is chosen
         Closes the connection to the old serialport and
         opens a serial connection on the new port
-        :param event: needed because it´s executed when selection in combobox is made
+        :param event: needed because it`s executed when selection in combobox is made
         :return: nothing
         """
         # or get selection directly from combobox
@@ -226,8 +226,11 @@ class App(tk.Frame):
         return
     
     def calcoffsets(self,ch):
-        hameghm1007.readfromoszi(ser)
-        
+        if (self.comport==''):
+            print ("Please select COM port first")
+        else:
+            da = hameghm1007.readfromoszi(ser)
+
         return
 
 
