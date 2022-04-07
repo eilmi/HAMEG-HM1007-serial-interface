@@ -61,8 +61,8 @@ def readfromoszi(ser=None, mod='R'):
     return data
 
 def readmodelfromInterface(ser=None):
-    ser.write(B'm')
-    __storescopemodel(ser.readline().rstrip.decode())
+    #ser.write(b'm')
+    #__storescopemodel(ser.readline().rstrip.decode())
     return
 
 

@@ -37,6 +37,25 @@ class SettingsWindow(tk.Frame):
 
         return self.times[self.timecb.current()] * self.time_units[self.timeunitcb.current()] / 200
 
+    def updaterawoffsetsandfig(self,event=None):
+        """
+
+        """
+        self.ch1rawoffset=127 - 25 * (self.voltch1offcb.current() - 4)
+        self.ch2rawoffset=127 - 25 * (self.voltch2offcb.current() - 4)
+        self.ref1rawoffset=127 - 25 * (self.voltref1offcb.current() - 4)
+        self.ref2rawoffset=127 - 25 * (self.voltref2offcb.current() - 4)
+        self.parent.update_fig()
+        return
+
+    def readinoffsets(self,ch):
+        """
+        read in the data from the oscilloscope and use it to determine the current DC offset
+        """
+
+        self.parent.calcoffsets(ch)
+        self.parent.update_fig()
+        return
 
     def __init__(self, parent, *args, **kwargs):
         """
@@ -55,6 +74,10 @@ class SettingsWindow(tk.Frame):
         self.savecsv = tk.IntVar(value=1)
         self.saveimg = tk.IntVar(value=1)
         self.autosave = tk.IntVar(value=1)
+        self.ch1rawoffset=127
+        self.ch2rawoffset=127
+        self.ref1rawoffset=127
+        self.ref2rawoffset=127
 
         # Combobox for selecting right serial port
         tk.Label(self.frame, text="Serial port:").grid(column=0, row=0)
@@ -111,25 +134,40 @@ class SettingsWindow(tk.Frame):
         self.voltch1offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
         self.voltch1offcb.grid(column=2, row=3)
         self.voltch1offcb.current(4)
-        self.voltch1offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
+        self.voltch1offcb.bind('<<ComboboxSelected>>', self.updaterawoffsetsandfig)
 
         # voltage offset CH2
         self.voltch2offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
         self.voltch2offcb.grid(column=2, row=4)
         self.voltch2offcb.current(4)
-        self.voltch2offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
+        self.voltch2offcb.bind('<<ComboboxSelected>>', self.updaterawoffsetsandfig)
 
         # voltage offset REF1
         self.voltref1offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
         self.voltref1offcb.grid(column=2, row=5)
         self.voltref1offcb.current(4)
-        self.voltref1offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
+        self.voltref1offcb.bind('<<ComboboxSelected>>', self.updaterawoffsetsandfig)
 
         # voltage offset REF2
         self.voltref2offcb = ttk.Combobox(self.frame, values=self.grid_names, width=5)
         self.voltref2offcb.grid(column=2, row=6)
         self.voltref2offcb.current(4)
-        self.voltref2offcb.bind('<<ComboboxSelected>>', self.parent.update_fig)
+        self.voltref2offcb.bind('<<ComboboxSelected>>', self.updaterawoffsetsandfig)
+
+
+        # get voltage offset buttons
+        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='CH1')))
+        self.getoffsetch1btn.grid(column=3,row=3)
+
+        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='CH2')))
+        self.getoffsetch1btn.grid(column=3,row=4)
+
+        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF1')))
+        self.getoffsetch1btn.grid(column=3,row=5)
+
+        self.getoffsetch1btn = tk.Button(self.frame,text="get", command=lambda: (self.readinoffsets(ch='REF2')))
+        self.getoffsetch1btn.grid(column=3,row=6)
+
 
         # button to read from oscilloscope
         self.buttonreadsingle = tk.Button(self.frame, text="Read from scope", command=lambda: (self.parent.readfromoszi(mode='R')))
@@ -141,7 +179,7 @@ class SettingsWindow(tk.Frame):
 
         tk.Label(self.frame, text="Things to save:").grid(column=0, row=9)
         self.saverawlogcb = tk.Checkbutton(self.frame,text="raw log", variable=self.saverawlog)
-        self.saverawlogcb.grid(column=0, row=10)
+        self.saverawlogcb.grid(column=1, row=11)
         self.savecsvcb = tk.Checkbutton(self.frame,text="csv", variable=self.savecsv)
         self.savecsvcb.grid(column=1, row=10)
         self.saveimgcb = tk.Checkbutton(self.frame,text="png", variable=self.saveimg)
@@ -151,7 +189,7 @@ class SettingsWindow(tk.Frame):
         self.savebutton.grid(column=0, row=11)
 
         self.saveimgcb = tk.Checkbutton(self.frame,text="save automatically", variable=self.autosave)
-        self.saveimgcb.grid(column=1, row=11)
+        self.saveimgcb.grid(column=0, row=10)
 
         self.frame.grid(column=0,row=0,sticky=tk.N)
         return

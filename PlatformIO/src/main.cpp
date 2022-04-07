@@ -83,14 +83,14 @@ void readfromoszi(){
 
       isvalid=!(PIND&(1<<5)); //get info if data in next address is valid or not
       PORTB|=1<<1; //generate rising edge for counting one adress further
-      _delay_us(80);
+      _delay_us(40);
       PORTB=PORTB&(~(1<<1)); //falling edge for counter - does not do anything
 
       int value = DATALINES; //reading the data from the bus
       if (isvalid) //check if oszilloskop signaled that the data is valid on previous address
         Serial.println(value);
     
-      _delay_us(40);
+      _delay_us(20);
     }
   }
   PORTB=PORTB& ~(0b100); //set SRQ to LOW to return oszilloskop into normal operation mode 

@@ -120,10 +120,8 @@ class App(tk.Frame):
                                                                    self.settingswindow.voltref1cb.current()] / 25,
                                                        ref2res=self.settingswindow.voltages[
                                                                    self.settingswindow.voltref2cb.current()] / 25,
-                                                       ch1off=127 - 25 * (
-                                                               self.settingswindow.voltch1offcb.current() - 4),
-                                                       ch2off=127 - 25 * (
-                                                               self.settingswindow.voltch2offcb.current() - 4),
+                                                       ch1off=self.settingswindow.ch1rawoffset,
+                                                       ch2off=self.settingswindow.ch2rawoffset,
                                                        ref1off=127 - 25 * (
                                                                self.settingswindow.voltref1offcb.current() - 4),
                                                        ref2off=127 - 25 * (
@@ -225,6 +223,11 @@ class App(tk.Frame):
         self.update_fig()
         self.grid()
 
+        return
+    
+    def calcoffsets(self,ch):
+        hameghm1007.readfromoszi(ser)
+        
         return
 
 
