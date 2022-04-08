@@ -5,6 +5,7 @@ import serial.tools.list_ports
 import hameghm1007
 from datetime import datetime
 import webbrowser
+import time
 
 import settings_gui
 import scope_gui
@@ -45,12 +46,22 @@ class App(tk.Frame):
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
         # self.lasttimestamp = datetime.now()
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+
+
+        te = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
+        self.settingswindow.voltref1cb["state"] = te
+        self.settingswindow.voltref1offcb["state"] = te
+        self.settingswindow.voltref2cb["state"] = te
+        self.settingswindow.voltref2offcb["state"] = te
+        self.settingswindow.getoffsetref1btn["state"] = te
+        self.settingswindow.getoffsetref2btn["state"] = te
         self.update_fig()
         return True
 
     def update_fig(self, event=None):
         """
-        :param event: needed because it´s executed when selection in combobox is made
+        :param event: needed because it`s executed when selection in combobox is made
         :return: nothing
         """
         self.calcnumpypandasfig()
@@ -69,7 +80,7 @@ class App(tk.Frame):
         is executed whenever a serial port from the combobox is chosen
         Closes the connection to the old serialport and
         opens a serial connection on the new port
-        :param event: needed because it´s executed when selection in combobox is made
+        :param event: needed because it`s executed when selection in combobox is made
         :return: nothing
         """
         # or get selection directly from combobox
@@ -78,7 +89,12 @@ class App(tk.Frame):
         ser.port = self.comport  # COM port of arduino
         ser.baudrate = 250000
         ser.open()
-        print("connected to" + self.comport)
+        time.sleep(2.0)
+        
+        hameghm1007.readmodelfromInterface(ser=ser)
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+        
+        print("connected to" + hameghm1007.oscilloscopemodel+"on" + self.comport)
         return
 
     def on_select_time(self, event=None):
@@ -117,14 +133,10 @@ class App(tk.Frame):
                                                                    self.settingswindow.voltref1cb.current()] / 25,
                                                        ref2res=self.settingswindow.voltages[
                                                                    self.settingswindow.voltref2cb.current()] / 25,
-                                                       ch1off=127 - 25 * (
-                                                               self.settingswindow.voltch1offcb.current() - 4),
-                                                       ch2off=127 - 25 * (
-                                                               self.settingswindow.voltch2offcb.current() - 4),
-                                                       ref1off=127 - 25 * (
-                                                               self.settingswindow.voltref1offcb.current() - 4),
-                                                       ref2off=127 - 25 * (
-                                                               self.settingswindow.voltref2offcb.current() - 4))
+                                                       ch1off=self.settingswindow.ch1rawoffset,
+                                                       ch2off=self.settingswindow.ch2rawoffset,
+                                                       ref1off=self.settingswindow.ref1rawoffset,
+                                                       ref2off=self.settingswindow.ref2rawoffset)
 
         self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
         self.signalinfoframe.update_infos() #Update signal infos on GUI
@@ -174,7 +186,13 @@ class App(tk.Frame):
         self.update_fig()
         if (self.settingswindow.autosave.get() == 1):
             self.savedata()
+        
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
 
+        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
+        #if hameghm1007.oscilloscopemodel=="HM-205:":
+        #    self.settingswindow.voltref1cb["state"]=tk.DISABLED
+        #    self.settingswindow.voltref1offcb["state"]=tk.DISABLED
         return True
 
     def __init__(self, parent, *args, **kwargs):
@@ -221,13 +239,27 @@ class App(tk.Frame):
         self.grid()
 
         return
+    
+    def getrawdata(self):
+        """
+        returns the raw output from the serial interface
+        """
+        if (self.comport==''):
+            print ("Please select COM port first")
+        else:
+            dat = hameghm1007.readfromoszi(ser)
+        #dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
+        #print("Warning! Reading offset from file")
+        return dat
+
+        return
 
 
 def main():
     root = tk.Tk()
     root.geometry("820x500")
     root.minsize(820, 500)
-    root.title("HAMEG HM1007 Interface")
+    root.title("HAMEG Bus Interface")
     app = App(root)
     root.mainloop()
 

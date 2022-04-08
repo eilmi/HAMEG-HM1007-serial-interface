@@ -1,7 +1,7 @@
 /*
-This program gets all of the available data from a HAMEG HM1007 oszilloskop and transmits it over serial 
+This program gets all of the available data from a HAMEG HM1007 or HM205-3 oszilloskop and transmits it over serial 
 
-written by Philipp Eilmsteiner, 27.01.2021
+written by Philipp Eilmsteiner, 03.07.2021
 */
 
 /*
@@ -29,17 +29,45 @@ D12 (PB4) <-> HBRESET (reset single shot) (23)
 
 
 #include <Arduino.h>
+#define DATALINES ((PINC&0b111111)|(PIND&(0b1100))<<4)
 
 const char* Channelnames[]={"CH1","CH2","REF1","REF2"};
+int chcount = 2;
+int valcount=1024;
+//String modelname ="";
+
+
+void sendModel(){
+  int oid = DATALINES;
+  switch (oid){
+    case 2:
+      //modelname="HM-1007";
+      Serial.println("HM-1007");
+      chcount=4;
+      valcount=2048;
+      break;
+
+    default:
+    //modelname="unknown";
+    Serial.println("unknown");
+    chcount=2;
+    break;
+  }
+}
 
 void readfromoszi(){
-  // ------------------------ Initialize Oszilloskop ------------------------------
-  PORTB|=0b100; // SET SRQ to HIGH to signal Oszilloskop that we want data from it (blanks screen of Oszilloskop)
+
+
+  // ------------------------ Read oszilloskop ID ---------------------------------
+  sendModel();
+
+  // ------------------------ Initialize oszilloskop ------------------------------
+  PORTB|=0b100; // SET SRQ to HIGH to signal oszilloskop that we want data from it (blanks screen of oszilloskop)
   delay(10);
   while((PIND&(1<<7))); //Wait until oszilloskop pull`s TE pin low to signal it is ready
 
   if (PIND&(1<<6)){ //Check if XY-Plot is enabled
-    int value = (PINC&0b111111)|(PIND&(0b1100))<<4; //get reference-position
+    int value = DATALINES; //get reference-position
     Serial.println("Ref. Pos:");Serial.println(value);
   }
   else{
@@ -51,23 +79,23 @@ void readfromoszi(){
 
   // ------------- Read all 4 buffers -------------------
   bool isvalid;
-  for (int x=0;x<=3;x++){
+  for (int x=0;x<chcount;x++){
     Serial.println(Channelnames[x]);
-    for (int i=0;i<=2047;i++){
+    for (int i=0;i<valcount;i++){
 
       isvalid=!(PIND&(1<<5)); //get info if data in next address is valid or not
       PORTB|=1<<1; //generate rising edge for counting one adress further
-      _delay_us(80);
+      _delay_us(40);
       PORTB=PORTB&(~(1<<1)); //falling edge for counter - does not do anything
 
-      int value = (PINC&0b111111)|((PIND&(0b1100))<<4); //reading the data from the bus
+      int value = DATALINES; //reading the data from the bus
       if (isvalid) //check if oszilloskop signaled that the data is valid on previous address
         Serial.println(value);
     
-      _delay_us(40);
+      _delay_us(20);
     }
   }
-  PORTB=PORTB& ~(0b100); //set SRQ to LOW to return Oszilloskop into normal operation mode 
+  PORTB=PORTB& ~(0b100); //set SRQ to LOW to return oszilloskop into normal operation mode 
   Serial.println("END");
 }
 
@@ -92,13 +120,22 @@ void readsingleshoot(){
   readfromoszi();
 }
 
+void sendid(){
+  Serial.println(DATALINES);
+}
+
 void loop() {
   if (Serial.available()>0){
     int receive = Serial.read();
     if (receive=='R')
       readfromoszi();
+
     if (receive=='S'){
       readsingleshoot();
     }
+    if (receive=='i')
+      sendid();
+    if (receive=='m')
+      sendModel();
   }
 }
