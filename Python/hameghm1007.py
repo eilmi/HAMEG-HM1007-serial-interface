@@ -73,10 +73,11 @@ def readfromoszi(ser=None, mod='R'):
     __storescopemodel(data)
     return data
 
-#def readmodelfromInterface(ser=None):
-    #ser.write(b'm')
-    #__storescopemodel(ser.readline().rstrip.decode())
-#    return
+def readmodelfromInterface(ser=None):
+    print("Writing m to interface")
+    ser.write(b'm')
+    __storescopemodel([ser.readline().rstrip().decode()])
+    return
 
 
 def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,

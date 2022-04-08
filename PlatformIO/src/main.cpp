@@ -33,6 +33,7 @@ D12 (PB4) <-> HBRESET (reset single shot) (23)
 
 const char* Channelnames[]={"CH1","CH2","REF1","REF2"};
 int chcount = 2;
+int valcount=1024;
 //String modelname ="";
 
 
@@ -43,6 +44,7 @@ void sendModel(){
       //modelname="HM-1007";
       Serial.println("HM-1007");
       chcount=4;
+      valcount=2048;
       break;
 
     default:
@@ -79,7 +81,7 @@ void readfromoszi(){
   bool isvalid;
   for (int x=0;x<chcount;x++){
     Serial.println(Channelnames[x]);
-    for (int i=0;i<=2047;i++){
+    for (int i=0;i<valcount;i++){
 
       isvalid=!(PIND&(1<<5)); //get info if data in next address is valid or not
       PORTB|=1<<1; //generate rising edge for counting one adress further

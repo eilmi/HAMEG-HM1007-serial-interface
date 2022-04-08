@@ -8,7 +8,7 @@ import numpy as np
 class SettingsWindow(tk.Frame):
     """
     Left upper part of the main window
-    includes all changeable parameters off the signal
+    includes all changeable parameters of the signal
     """
     voltages = [5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005]
     times = [50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]

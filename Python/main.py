@@ -5,6 +5,7 @@ import serial.tools.list_ports
 import hameghm1007
 from datetime import datetime
 import webbrowser
+import time
 
 import settings_gui
 import scope_gui
@@ -88,7 +89,10 @@ class App(tk.Frame):
         ser.port = self.comport  # COM port of arduino
         ser.baudrate = 250000
         ser.open()
+        time.sleep(2.0)
+        
         hameghm1007.readmodelfromInterface(ser=ser)
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
         
         print("connected to" + hameghm1007.oscilloscopemodel+"on" + self.comport)
         return
@@ -241,12 +245,12 @@ class App(tk.Frame):
         """
         returns the raw output from the serial interface
         """
-        #if (self.comport==''):
-        #    print ("Please select COM port first")
-        #else:
-            #data = hameghm1007.readfromoszi(ser)
-        dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
-        print("Warning! Reading offset from file")
+        if (self.comport==''):
+            print ("Please select COM port first")
+        else:
+            dat = hameghm1007.readfromoszi(ser)
+        #dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
+        #print("Warning! Reading offset from file")
         return dat
 
         return

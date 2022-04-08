@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import hameghm1007
 
 class ScopeWindow(tk.Frame):
     """
@@ -83,7 +82,7 @@ class ScopeWindow(tk.Frame):
         self.scopeax.clear()
 
         if "XY-Plot" in self.parent.data:
-            self.scopeax.plot(self.parent.ch2, self.parent.ch1)
+            self.scopeax.plot(self.parent.dataframe["CH2"], self.parent.dataframe["CH1"])
         else:
             if 'CH1' in self.parent.dataframe:
                 self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH1"])
