@@ -125,18 +125,8 @@ class App(tk.Frame):
         :return: nothing
         """
         self.dataframe = hameghm1007.createpandasframe(self.data, timeres=self.settingswindow.getsamplinginterval(),
-                                                       ch1res=self.settingswindow.voltages[
-                                                                  self.settingswindow.voltch1cb.current()] / 25,
-                                                       ch2res=self.settingswindow.voltages[
-                                                                  self.settingswindow.voltch2cb.current()] / 25,
-                                                       ref1res=self.settingswindow.voltages[
-                                                                   self.settingswindow.voltref1cb.current()] / 25,
-                                                       ref2res=self.settingswindow.voltages[
-                                                                   self.settingswindow.voltref2cb.current()] / 25,
-                                                       ch1off=self.settingswindow.ch1rawoffset,
-                                                       ch2off=self.settingswindow.ch2rawoffset,
-                                                       ref1off=self.settingswindow.ref1rawoffset,
-                                                       ref2off=self.settingswindow.ref2rawoffset)
+                                                       resolutions=self.settingswindow.getresolutionarray(),
+                                                       offsets=self.settingswindow.getoffsetarray())
 
         self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
         self.signalinfoframe.update_infos() #Update signal infos on GUI

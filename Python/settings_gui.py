@@ -38,6 +38,23 @@ class SettingsWindow(tk.Frame):
 
         return self.times[self.timecb.current()] * self.time_units[self.timeunitcb.current()] / 200
 
+
+    def getoffsetarray(self):
+        """
+        :return: array of all raw (bit) offset values for all four channels
+        """
+        return [self.ch1rawoffset,self.ch2rawoffset,self.ref1rawoffset,self.ref2rawoffset]
+
+    def getresolutionarray(self):
+        """
+        :return: array of all the resolutions of the four channels in Volt per Bit
+        """
+        return [self.voltages[self.voltch1cb.current()] / 25,
+                self.voltages[self.voltch2cb.current()] / 25,
+                self.voltages[self.voltref1cb.current()] / 25,
+                self.voltages[self.voltref2cb.current()] / 25]
+
+
     def updaterawoffsetsandfig(self,event=None):
         """
         Updates the raw offset values corresponding to the values chosen in the dropdown menus and redraws the figure

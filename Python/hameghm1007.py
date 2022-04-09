@@ -1,8 +1,4 @@
-import serial
-import time
 import os
-import csv
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -74,14 +70,17 @@ def readfromoszi(ser=None, mod='R'):
     return data
 
 def readmodelfromInterface(ser=None):
+    """
+    """
     print("Writing m to interface")
     ser.write(b'm')
     __storescopemodel([ser.readline().rstrip().decode()])
     return
 
 
-def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
-                      ref1off=0, ref1res=1, ref2off=0, ref2res=1):
+#def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
+#                      ref1off=0, ref1res=1, ref2off=0, ref2res=1):
+def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
     """
     Generates the pandas dataframe out of the raw serial input stream.
     :param data: raw serial values
@@ -108,10 +107,10 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
 
     # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
     time_data = np.arange(horizontalresolution) * timeres
-    ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - ch1off) * ch1res
-    ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - ch2off) * ch2res
-    ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) -ref1off) * ref1res
-    ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - ref2off)* ref2res
+    ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - offsets[0]) * resolutions[0]
+    ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - offsets[1]) * resolutions[1]
+    ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) - offsets[2]) * resolutions[2]
+    ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - offsets[3])* resolutions[3]
 
     #create pandas dataframe with all valid data
     pandasframe = pd.DataFrame()
