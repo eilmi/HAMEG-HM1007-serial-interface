@@ -1,6 +1,6 @@
 # Serial interface for Hameg HM1007
 ## Introduction
-This repository contains all the needed code to get the data from a HAMEG HM1007 oscilloscope. The core of this interface is an Arduino Nano which is used to communicate with the oscilloscope via it's HO79-4 interface.
+This repository contains all the needed code to get the data from a HAMEG HM1007 oscilloscope. The core of this interface is an Arduino Nano which is used to communicate with the oscilloscope via it's Hameg interface (a 26-pin connector).
 
 ## Serial interface
 ### Flashing the Arduino
@@ -73,6 +73,6 @@ This allows you to tune the horizontal position of 0V of your input signal (best
 Doing so doesn't impact the amplitude of the signal(s) but results in correct absolute voltage values.   
 ### Fast Fourier transform
 The interface is also capable of displaying the fast fourier transform (FFT) of the captured signal which can be handy to 
-detected harmonic oscillations.
+detect harmonic oscillations.
 
 ![Python GUI](Pictures/Software/Square_Wave_FFT.png?raw=true "python program with FFT analysis")
