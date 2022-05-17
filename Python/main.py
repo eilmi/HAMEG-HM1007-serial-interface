@@ -89,23 +89,6 @@ class App(tk.Frame):
         print("connected to" + hameghm1007.oscilloscopemodel+"on" + self.comport)
         return
 
-    def on_select_time(self, event=None):
-        """
-        TODO: move to settings_gui.py
-        checks if the new selection of the time value is available in "µs" or just in "ms" and "s"
-        :param event:
-        :return: nothing
-        """
-        if self.settingswindow.timecb.current() > 3:  # time value is smaller than 5 -> µs are not possible
-            if self.settingswindow.timeunitcb.current() == 2:  # reset selection if µs are selected
-                self.settingswindow.timeunitcb.set('')
-            self.settingswindow.timeunitcb['values'] = ['s', 'ms']
-        else:  # µs are possible
-            self.settingswindow.timeunitcb['values'] = ['s', 'ms', 'us']
-
-        self.update_fig()
-        return
-
     def calcnumpypandasfig(self):
         """
         Calculates a pandas dataframe out of the raw values received from the arduino.
