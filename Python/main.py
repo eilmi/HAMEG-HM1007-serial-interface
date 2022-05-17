@@ -46,16 +46,8 @@ class App(tk.Frame):
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
         # self.lasttimestamp = datetime.now()
-        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+        self.settingswindow.updatescopemodel(hameghm1007.oscilloscopemodel)
 
-
-        te = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
-        self.settingswindow.voltref1cb["state"] = te
-        self.settingswindow.voltref1offcb["state"] = te
-        self.settingswindow.voltref2cb["state"] = te
-        self.settingswindow.voltref2offcb["state"] = te
-        self.settingswindow.getoffsetref1btn["state"] = te
-        self.settingswindow.getoffsetref2btn["state"] = te
         self.update_fig()
         return True
 
@@ -99,6 +91,7 @@ class App(tk.Frame):
 
     def on_select_time(self, event=None):
         """
+        TODO: move to settings_gui.py
         checks if the new selection of the time value is available in "µs" or just in "ms" and "s"
         :param event:
         :return: nothing
@@ -177,13 +170,10 @@ class App(tk.Frame):
         if (self.settingswindow.autosave.get() == 1):
             self.savedata()
         
-        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel) # update scope model in settings section of GUI
 
-        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
-        self.settingswindow.voltref2cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
-        #if hameghm1007.oscilloscopemodel=="HM-205:":
-        #    self.settingswindow.voltref1cb["state"]=tk.DISABLED
-        #    self.settingswindow.voltref1offcb["state"]=tk.DISABLED
+        #self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
+        #self.settingswindow.voltref2cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
         return True
 
     def __init__(self, parent, *args, **kwargs):

@@ -26,7 +26,7 @@ class SettingsWindow(tk.Frame):
     def updateserialports(self):
         """
         update entries of combobox for selecting available serial ports
-        :return:
+        :return: none
         """
         self.comcb['values'] = self.get_serial_port_list()
 
@@ -53,6 +53,26 @@ class SettingsWindow(tk.Frame):
                 self.voltages[self.voltch2cb.current()] / 25,
                 self.voltages[self.voltref1cb.current()] / 25,
                 self.voltages[self.voltref2cb.current()] / 25]
+
+
+    def updatescopemodel(self,scopemodel):
+        """
+        :param scopemodel: String of current scope model
+        :return: none
+        """
+        #print(scopemodel)
+        self.scopemodel.set(scopemodel)
+
+        te = tk.ACTIVE if scopemodel=="HM1007" else tk.DISABLED
+        self.voltref1cb["state"] = te
+        self.voltref1offcb["state"] = te
+        self.voltref2cb["state"] = te
+        self.voltref2offcb["state"] = te
+        self.getoffsetref1btn["state"] = te
+        self.getoffsetref2btn["state"] = te
+        self.buttonreadsingleshot["state"] = te
+        #print("updated")
+        return
 
 
     def updaterawoffsetsandfig(self,event=None):
@@ -110,6 +130,37 @@ class SettingsWindow(tk.Frame):
         self.parent.update_fig()
         return
 
+    def __onselecttime__(self,event=None):
+        """
+        TODO: move to settings_gui.py
+        checks if the new selection of the time value is available in "µs" or just in "ms" and "s"
+        :param event:
+        :return: nothing
+        """
+        sm = self.scopemodel.get()
+        if sm=="HM1007":
+            if self.timecb.current() > 3:  # time value is smaller than 5 -> µs are not possible
+                if self.timeunitcb.current() == 2:  # reset selection if µs are selected
+                    self.timeunitcb.set('')
+                self.timeunitcb['values'] = ['s', 'ms']
+            else:  # µs are possible
+                self.timeunitcb['values'] = ['s', 'ms', 'us']
+        elif sm=="HM205-3":
+            if self.timecb.current() > 2: #time value is smaller than 10 -> µs aren't possible
+                if self.timeunitcb.current() == 2:  # reset selection if µs are selected
+                    self.timeunitcb.set('')
+                self.timeunitcb['values'] = ['s', 'ms']
+            
+            elif self.timecb.current() < 3: # time value is bigger than 5 -> s are not possible
+                if self.timeunitcb.current() == 0:  # reset selection if µs are selected
+                    self.timeunitcb.set('')
+                self.timeunitcb['values'] = ['','ms','us']
+            else:
+                self.timeunitcb['values'] = ['s', 'ms', 'us'] 
+        self.parent.update_fig()
+
+        return
+
     def __init__(self, parent, *args, **kwargs):
         """
         initialization of setting part of main GUI
@@ -145,7 +196,7 @@ class SettingsWindow(tk.Frame):
         # time selector
         tk.Label(self.frame, text="Time per Division:").grid(column=0, row=2)
         self.timecb = ttk.Combobox(self.frame, values=['50', '20', '10', '5', '2', '1', '.5', '.2', '.1'], width=5)
-        self.timecb.bind('<<ComboboxSelected>>', self.parent.on_select_time)
+        self.timecb.bind('<<ComboboxSelected>>', self.__onselecttime__)
         self.timecb.grid(column=1, row=2)
         self.timecb.current(0)
 

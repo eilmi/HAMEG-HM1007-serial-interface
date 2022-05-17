@@ -16,7 +16,7 @@ def __storescopemodel(serialdata):
     """
     global oscilloscopemodel
     global horizontalresolution
-    if serialdata[0]=="HM-1007":
+    if serialdata[0]=="HM1007" or serialdata[0]=="HM-1007":
         oscilloscopemodel="HM1007"
         horizontalresolution=2048
     elif serialdata[0]=="HM205-3":
@@ -85,14 +85,8 @@ def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
     Generates the pandas dataframe out of the raw serial input stream.
     :param data: raw serial values
     :param timeres: sampling rate (in seconds) of the channels
-    :param ch1off: offset of CH1 in bits (raw value)
-    :param ch1res: resolution of CH1 in V/bit
-    :param ch2off: offset of CH2 in bits (raw value)
-    :param ch2res: resolution of CH2 in V/bit
-    :param ref1off:  
-    :param ref1res:
-    :param ref2off:
-    :param ref2res:
+    :param resolutions: 
+    :param offsets:
     :return:
     """
 
@@ -129,7 +123,7 @@ def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
             pass
         try:
             begin_CH2 = data.index("CH2")
-            ch2_data = (np.array(data[begin_CH2 + 1:begin_CH2+2049]).astype(np.int) - offsets[0]) * resolutions[0]
+            ch2_data = (np.array(data[begin_CH2 + 1:begin_CH2+2049]).astype(np.int) - offsets[1]) * resolutions[1]
         except ValueError:
             pass
     else:
@@ -179,6 +173,7 @@ def makeplot(data, dataframe):
 
     if "XY-Plot" in data:
         ax.plot(dataframe.CH2.tolist(), dataframe.CH1.tolist())
+    
     else:
         if "CH1" in dataframe:
             ax.plot(dataframe["time"], dataframe["CH1"])
@@ -190,7 +185,7 @@ def makeplot(data, dataframe):
             ax.plot(dataframe["time"], dataframe["REF2"])
 
     ax.set(xlabel='time [s]', ylabel='Volts',
-           title='Data from Hameg HM1007')
+           title='Data from Hameg '+oscilloscopemodel)
     ax.grid()
 
     # plt.show()
