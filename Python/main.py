@@ -46,16 +46,8 @@ class App(tk.Frame):
         print("Loaded", filedir)
         self.data = hameghm1007.readfromfile(filedir)
         # self.lasttimestamp = datetime.now()
-        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+        self.settingswindow.updatescopemodel(hameghm1007.oscilloscopemodel)
 
-
-        te = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
-        self.settingswindow.voltref1cb["state"] = te
-        self.settingswindow.voltref1offcb["state"] = te
-        self.settingswindow.voltref2cb["state"] = te
-        self.settingswindow.voltref2offcb["state"] = te
-        self.settingswindow.getoffsetref1btn["state"] = te
-        self.settingswindow.getoffsetref2btn["state"] = te
         self.update_fig()
         return True
 
@@ -97,22 +89,6 @@ class App(tk.Frame):
         print("connected to" + hameghm1007.oscilloscopemodel+"on" + self.comport)
         return
 
-    def on_select_time(self, event=None):
-        """
-        checks if the new selection of the time value is available in "µs" or just in "ms" and "s"
-        :param event:
-        :return: nothing
-        """
-        if self.settingswindow.timecb.current() > 3:  # time value is smaller than 5 -> µs are not possible
-            if self.settingswindow.timeunitcb.current() == 2:  # reset selection if µs are selected
-                self.settingswindow.timeunitcb.set('')
-            self.settingswindow.timeunitcb['values'] = ['s', 'ms']
-        else:  # µs are possible
-            self.settingswindow.timeunitcb['values'] = ['s', 'ms', 'us']
-
-        self.update_fig()
-        return
-
     def calcnumpypandasfig(self):
         """
         Calculates a pandas dataframe out of the raw values received from the arduino.
@@ -125,18 +101,8 @@ class App(tk.Frame):
         :return: nothing
         """
         self.dataframe = hameghm1007.createpandasframe(self.data, timeres=self.settingswindow.getsamplinginterval(),
-                                                       ch1res=self.settingswindow.voltages[
-                                                                  self.settingswindow.voltch1cb.current()] / 25,
-                                                       ch2res=self.settingswindow.voltages[
-                                                                  self.settingswindow.voltch2cb.current()] / 25,
-                                                       ref1res=self.settingswindow.voltages[
-                                                                   self.settingswindow.voltref1cb.current()] / 25,
-                                                       ref2res=self.settingswindow.voltages[
-                                                                   self.settingswindow.voltref2cb.current()] / 25,
-                                                       ch1off=self.settingswindow.ch1rawoffset,
-                                                       ch2off=self.settingswindow.ch2rawoffset,
-                                                       ref1off=self.settingswindow.ref1rawoffset,
-                                                       ref2off=self.settingswindow.ref2rawoffset)
+                                                       resolutions=self.settingswindow.getresolutionarray(),
+                                                       offsets=self.settingswindow.getoffsetarray())
 
         self.fftframe = hameghm1007.calc_fftdataframe(self.dataframe,self.settingswindow.getsamplinginterval()) # Calculate the FFT of all available channels
         self.signalinfoframe.update_infos() #Update signal infos on GUI
@@ -187,12 +153,10 @@ class App(tk.Frame):
         if (self.settingswindow.autosave.get() == 1):
             self.savedata()
         
-        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
+        self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel) # update scope model in settings section of GUI
 
-        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
-        #if hameghm1007.oscilloscopemodel=="HM-205:":
-        #    self.settingswindow.voltref1cb["state"]=tk.DISABLED
-        #    self.settingswindow.voltref1offcb["state"]=tk.DISABLED
+        #self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
+        #self.settingswindow.voltref2cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
         return True
 
     def __init__(self, parent, *args, **kwargs):
@@ -250,7 +214,7 @@ class App(tk.Frame):
             dat = hameghm1007.readfromoszi(ser)
         #dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
         #print("Warning! Reading offset from file")
-        return dat
+            return dat
 
         return
 

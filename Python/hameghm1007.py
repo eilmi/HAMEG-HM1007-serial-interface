@@ -15,12 +15,12 @@ def __storescopemodel(serialdata):
     """
     global oscilloscopemodel
     global horizontalresolution
-    if serialdata[0]=="HM-1007":
-        oscilloscopemodel="HM-1007"
+    if serialdata[0]=="HM1007" or serialdata[0]=="HM-1007":
+        oscilloscopemodel="HM1007"
         horizontalresolution=2048
-    elif serialdata[0]=="HM-205":
-        oscilloscopemodel="HM-205"
-        horizontalresolution=1024
+    elif serialdata[0]=="HM205-3":
+        oscilloscopemodel="HM205-3"
+        horizontalresolution=2048
     else:
         oscilloscopemodel="unknown"
         horizontalresolution=2048
@@ -69,44 +69,65 @@ def readfromoszi(ser=None, mod='R'):
     return data
 
 def readmodelfromInterface(ser=None):
+    """
+    """
     print("Writing m to interface")
     ser.write(b'm')
     __storescopemodel([ser.readline().rstrip().decode()])
     return
 
 
-def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
-                      ref1off=0, ref1res=1, ref2off=0, ref2res=1):
+#def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
+#                      ref1off=0, ref1res=1, ref2off=0, ref2res=1):
+def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
     """
     Generates the pandas dataframe out of the raw serial input stream.
     :param data: raw serial values
     :param timeres: sampling rate (in seconds) of the channels
-    :param ch1off: offset of CH1 in bits (raw value)
-    :param ch1res: resolution of CH1 in V/bit
-    :param ch2off: offset of CH2 in bits (raw value)
-    :param ch2res: resolution of CH2 in V/bit
-    :param ref1off:
-    :param ref1res:
-    :param ref2off:
-    :param ref2res:
+    :param resolutions: 
+    :param offsets:
     :return:
     """
-    # get starting position of all 4 2048 or 1024 byte long data blocks
-    try:
-        begin_CH1 = data.index("CH1")
-        begin_CH2 = data.index("CH2")
-        begin_Ref1 = data.index("REF1")
-        begin_Ref2 = data.index("REF2")
-    except ValueError:
-        print("invalid serial data - couldnt create numpy arrays")
-        return pd.DataFrame()
 
-    # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
-    time_data = np.arange(horizontalresolution) * timeres
-    ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - ch1off) * ch1res
-    ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - ch2off) * ch2res
-    ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) -ref1off) * ref1res
-    ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - ref2off)* ref2res
+
+    if (oscilloscopemodel=="HM1007"):
+        # get starting position of all 4 2048 or 1024 byte long data blocks
+        try:
+            begin_CH1 = data.index("CH1")
+            begin_CH2 = data.index("CH2")
+            begin_Ref1 = data.index("REF1")
+            begin_Ref2 = data.index("REF2")
+        except ValueError:
+            print("invalid serial data - couldnt create numpy arrays")
+            return []
+
+        # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
+        time_data = np.arange(horizontalresolution) * timeres
+        ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - offsets[0]) * resolutions[0]
+        ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - offsets[1]) * resolutions[1]
+        ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) - offsets[2]) * resolutions[2]
+        ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - offsets[3])* resolutions[3]
+
+        
+    elif (oscilloscopemodel=="HM205-3"):
+        time_data = np.arange(horizontalresolution) * timeres
+        ch1_data=[]
+        ch2_data=[]
+        ref1_data=[]
+        ref2_data=[]
+        try:
+            begin_CH1 = data.index("CH1")
+            ch1_data = (np.array(data[begin_CH1 + 1:begin_CH1+2049]).astype(np.int) - offsets[0]) * resolutions[0]
+        except ValueError:
+            pass
+        try:
+            begin_CH2 = data.index("CH2")
+            ch2_data = (np.array(data[begin_CH2 + 1:begin_CH2+2049]).astype(np.int) - offsets[1]) * resolutions[1]
+        except ValueError:
+            pass
+    else:
+        return []
+
 
     #create pandas dataframe with all valid data
     pandasframe = pd.DataFrame()
@@ -134,6 +155,8 @@ def createpandasframe(data, timeres=1, ch1off=0, ch1res=1, ch2off=0, ch2res=1,
             combined_data = np.vstack((time_data, ch2_data,)).T
             pandasframe = pd.DataFrame(combined_data, columns=['time', 'CH2'])
 
+        
+
     return pandasframe
 
 
@@ -149,6 +172,7 @@ def makeplot(data, dataframe):
 
     if "XY-Plot" in data:
         ax.plot(dataframe.CH2.tolist(), dataframe.CH1.tolist())
+    
     else:
         if "CH1" in dataframe:
             ax.plot(dataframe["time"], dataframe["CH1"])
@@ -160,7 +184,7 @@ def makeplot(data, dataframe):
             ax.plot(dataframe["time"], dataframe["REF2"])
 
     ax.set(xlabel='time [s]', ylabel='Volts',
-           title='Data from Hameg HM1007')
+           title='Data from Hameg '+oscilloscopemodel)
     ax.grid()
 
     # plt.show()
@@ -175,7 +199,8 @@ def save(directory, now, data, dataframe):
     :return: True when everything could be saved
     """
     fig, ax = makeplot(data, dataframe)
-    di = directory + now.strftime("\HM1007_export-%Y_%m_%d-%H_%M_%S")
+    #di = directory + now.strftime("\HM1007_export-%Y_%m_%d-%H_%M_%S")
+    di = directory + '\\' + oscilloscopemodel +"_export-" + now.strftime("%Y_%m_%d-%H_%M_%S")
     try:
         os.mkdir(di)
         os.chdir(di)
@@ -183,7 +208,7 @@ def save(directory, now, data, dataframe):
         print("Error creating folder occurred")
         return False
 
-    filename = now.strftime("HM1007_raw-%Y_%m_%d-%H_%M_%S.txt")
+    filename = oscilloscopemodel + now.strftime("_raw-%Y_%m_%d-%H_%M_%S.txt")
 
     with open(filename, 'w') as f:
         for item in data:
@@ -191,10 +216,10 @@ def save(directory, now, data, dataframe):
     f.close()
 
     # Save pandas dataframe to csv file
-    filename = now.strftime("HM1007_data-%Y_%m_%d-%H_%M_%S.csv")
+    filename = oscilloscopemodel + now.strftime("_data-%Y_%m_%d-%H_%M_%S.csv")
     dataframe.to_csv(filename, index=False, header=True, float_format='%11.6f')
 
-    filename = now.strftime("HM1007_plot-%Y_%m_%d-%H_%M_%S.png")
+    filename = oscilloscopemodel + now.strftime("_plot-%Y_%m_%d-%H_%M_%S.png")
     fig.savefig(filename)
     return True
 

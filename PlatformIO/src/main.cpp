@@ -1,5 +1,5 @@
 /*
-This program gets all of the available data from a HAMEG HM1007 or HM205-3 oszilloskop and transmits it over serial 
+This program gets all of the available data from a HAMEG HM1007 or HM205-3 oscilloscope and transmits it over serial 
 
 written by Philipp Eilmsteiner, 03.07.2021
 */
@@ -31,20 +31,30 @@ D12 (PB4) <-> HBRESET (reset single shot) (23)
 #include <Arduino.h>
 #define DATALINES ((PINC&0b111111)|(PIND&(0b1100))<<4)
 
+#define ID_HM1007 2
+#define ID_HM205_3 1
+
 const char* Channelnames[]={"CH1","CH2","REF1","REF2"};
 int chcount = 2;
 int valcount=1024;
-//String modelname ="";
+char model = 0;
 
 
 void sendModel(){
   int oid = DATALINES;
   switch (oid){
-    case 2:
-      //modelname="HM-1007";
-      Serial.println("HM-1007");
+    case ID_HM1007:
+      Serial.println("HM1007");
       chcount=4;
       valcount=2048;
+      model = ID_HM1007;
+      break;
+
+    case ID_HM205_3:
+      Serial.println("HM205-3");
+      chcount=2;
+      valcount=2048;
+      model = ID_HM205_3;
       break;
 
     default:
@@ -57,46 +67,84 @@ void sendModel(){
 
 void readfromoszi(){
 
-
-  // ------------------------ Read oszilloskop ID ---------------------------------
+  // ------------------------ Read oscilloscope ID ---------------------------------
   sendModel();
 
-  // ------------------------ Initialize oszilloskop ------------------------------
-  PORTB|=0b100; // SET SRQ to HIGH to signal oszilloskop that we want data from it (blanks screen of oszilloskop)
-  delay(10);
-  while((PIND&(1<<7))); //Wait until oszilloskop pull`s TE pin low to signal it is ready
+  // ------------------------ Initialize oscilloscope ------------------------------
+  PORTB|=0b100; // SET SRQ to HIGH to signal oscilloscope that we want data from it (blanks screen of oscilloscope)
+  _delay_us(100);
+  if (model==ID_HM1007)
+    while((PIND&(1<<7))); //Wait until oscilloscope pull`s TE pin low to signal it is ready
+  else
+    _delay_us(40);
 
-  if (PIND&(1<<6)){ //Check if XY-Plot is enabled
-    int value = DATALINES; //get reference-position
-    Serial.println("Ref. Pos:");Serial.println(value);
+  if (model==ID_HM1007){
+    if (PIND&(1<<6)){ //Check if XY-Plot is enabled
+      int value = DATALINES; //get reference-position
+      Serial.println("Ref. Pos:");Serial.println(value);
+    }
+    else{
+      Serial.println("XY-Plot");
+    }
   }
-  else{
-    Serial.println("XY-Plot");
-  }
-  PORTB=PORTB&(~1<<0); //falling edge to reset the address counter of oszilloskop
-  delay(10);
+  PORTB&=(~1<<0); //falling edge to reset the address counter of oscilloscope
+  _delay_us(50);
   PORTB|=1<<0; //set reset pin to HIGH again (it´s normal state)
 
   // ------------- Read all 4 buffers -------------------
   bool isvalid;
+  char prevch=0;
   for (int x=0;x<chcount;x++){
-    Serial.println(Channelnames[x]);
+    if (model==ID_HM1007){
+      Serial.println(Channelnames[x]);
+      }
     for (int i=0;i<valcount;i++){
-
       isvalid=!(PIND&(1<<5)); //get info if data in next address is valid or not
-      PORTB|=1<<1; //generate rising edge for counting one adress further
+      PORTB|=1<<1; //generate rising edge for counting one address further
       _delay_us(40);
-      PORTB=PORTB&(~(1<<1)); //falling edge for counter - does not do anything
+      PORTB&=(~(1<<1)); //falling edge for counter - does not do anything
+      _delay_us(40);
 
-      int value = DATALINES; //reading the data from the bus
-      if (isvalid) //check if oszilloskop signaled that the data is valid on previous address
-        Serial.println(value);
+      if (i==0 && model==ID_HM205_3){
+        if (PIND&(1<<5)){ //check whether CH1 or CH2 is being transmitted by the oscilloscope
+          if (prevch!=1) //check if CH1 was transmitted previously
+            Serial.println("CH1"); //if not send "CH1" over serial
+          else  
+            break; //abort if channel has already been sent
+          prevch=1;
+          }
+        else{ //CH2 is transmitted
+          if (prevch!=2)
+            Serial.println("CH2");
+          else
+            break; //abort if channel has already been sent
+          prevch=2;
+          }
+      }
+      
+      if (isvalid || model==ID_HM205_3){ //check if oscilloscope signaled that the data is valid on previous address
+        //int value = DATALINES; //reading the data from the bus
+        Serial.println((int)DATALINES);
+      }
     
       _delay_us(20);
     }
   }
-  PORTB=PORTB& ~(0b100); //set SRQ to LOW to return oszilloskop into normal operation mode 
+  PORTB&=~(0b100); //set SRQ to LOW to return oscilloscope into normal operation mode 
   Serial.println("END");
+}
+
+void readsingleshoot(){
+  DDRB|=1<<4; //SET PB4 (HBRESET) to OUTPUT (0V) -> Pulls pin to LOW
+  _delay_ms(10);
+  DDRB=DDRB&(~(1<<4)); //SET PB4 (HBRESET) back to INPUT -> oscilloscope pulls it back to 5V
+  _delay_ms(5);
+  while((PIND&(1<<7))); //Wait for oscilloscope to pull TE low to signal signal was successfully captured
+  readfromoszi();
+}
+
+void sendid(){
+  Serial.println(DATALINES);
 }
 
 void setup() {
@@ -108,21 +156,9 @@ void setup() {
   PORTD=0b00000; //disable all pull-up resistors of port register D
 
   Serial.begin(250000);
-  delay(10);
+  _delay_ms(10);
 }
 
-void readsingleshoot(){
-  DDRB|=1<<4; //SET PB4 (HBRESET) to OUTPUT (0V) -> Pulls pin to LOW
-  delay(10);
-  DDRB=DDRB&(~(1<<4)); //SET PB4 (HBRESET) back to INPUT -> oszilloskop pulls it back to 5V
-  delay(5);
-  while((PIND&(1<<7))); //Wait for oszilloskope to pull TE low to signal signal was successfully captured
-  readfromoszi();
-}
-
-void sendid(){
-  Serial.println(DATALINES);
-}
 
 void loop() {
   if (Serial.available()>0){

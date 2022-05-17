@@ -1,0 +1,2 @@
+Selectable channel for FFT
+XY-Plot Signal information reporting random stuff

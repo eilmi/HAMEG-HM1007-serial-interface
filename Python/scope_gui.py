@@ -83,17 +83,19 @@ class ScopeWindow(tk.Frame):
 
         if "XY-Plot" in self.parent.data:
             self.scopeax.plot(self.parent.dataframe["CH2"], self.parent.dataframe["CH1"])
+            self.scopeax.set(xlabel='CH2 [V]', ylabel='CH1 [V]')
         else:
             if 'CH1' in self.parent.dataframe:
-                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH1"])
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH1"],"dodgerblue",label="CH1")
             if 'CH2' in self.parent.dataframe:
-                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH2"])
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["CH2"],"darkorange",label="CH2")
             if 'REF1' in self.parent.dataframe:
-                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF1"])
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF1"],"darkgreen",label="REF1")
             if 'REF2' in self.parent.dataframe:
-                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF2"])
+                self.scopeax.plot(self.parent.dataframe["time"],self.parent.dataframe["REF2"],"crimson",label="REF2")
+            self.scopeax.legend(bbox_to_anchor=(0, 1, 1, 0), loc="lower left", mode="expand",ncol=4)
 
-        self.scopeax.set(xlabel='time [s]', ylabel='Volts')
+            self.scopeax.set(xlabel='time [s]', ylabel='Volts')
         self.scopeax.grid()
         self.scope.draw_idle()
 
