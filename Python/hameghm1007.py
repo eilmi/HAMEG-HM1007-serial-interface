@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from datetime import datetime
-import time
 from scipy import fftpack
 
 oscilloscopemodel = ''
@@ -268,5 +267,3 @@ def calc_fftdataframe(dataframe,samplinginterval):
         fftframe[column] = X
 
     return fftframe
-
-

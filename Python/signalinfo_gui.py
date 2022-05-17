@@ -1,9 +1,5 @@
 import tkinter as tk
-import matplotlib.pylab as plt
 import numpy as np
-from matplotlib.backends._backend_tk import NavigationToolbar2Tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 
 
 class SignalInfoFrame(tk.Frame):
@@ -132,7 +128,6 @@ class SignalInfoFrame(tk.Frame):
             #Calculate Duty Cycles
             signal = self.parent.dataframe[channelname] # get signal data for selected channel
             duty_cycles = self.calc_duty_cycle(signal) # calculate duty cycle of this signal
-
-            self.signaldutycycle.set(str(np.mean(duty_cycles)*100)+"%") # set duty cycle in GUI
+            self.signaldutycycle.set(str(round(np.mean(duty_cycles)*100,2))+"%") # set duty cycle in GUI
 
         return
