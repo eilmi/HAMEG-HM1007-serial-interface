@@ -179,7 +179,8 @@ class App(tk.Frame):
         
         self.settingswindow.scopemodel.set(hameghm1007.oscilloscopemodel)
 
-        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM-205" else tk.ACTIVE
+        self.settingswindow.voltref1cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
+        self.settingswindow.voltref2cb["state"] = tk.DISABLED if hameghm1007.oscilloscopemodel=="HM205-3" else tk.ACTIVE
         #if hameghm1007.oscilloscopemodel=="HM-205:":
         #    self.settingswindow.voltref1cb["state"]=tk.DISABLED
         #    self.settingswindow.voltref1offcb["state"]=tk.DISABLED
@@ -241,7 +242,7 @@ class App(tk.Frame):
             dat = hameghm1007.readfromoszi(ser)
         #dat = hameghm1007.readfromfile("temp/offset_test.txt",setModel=False)
         #print("Warning! Reading offset from file")
-        return dat
+            return dat
 
         return
 

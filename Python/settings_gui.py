@@ -73,12 +73,13 @@ class SettingsWindow(tk.Frame):
         """
 
         da=self.parent.getrawdata()
+
         try:
             begin_CH1 = da.index("CH1")
             begin_CH2 = da.index("CH2")
             begin_Ref1 = da.index("REF1")
             begin_Ref2 = da.index("REF2")
-        except ValueError:
+        except AttributeError:
             print("invalid serial data - coudn`t set offset")
             return
         
