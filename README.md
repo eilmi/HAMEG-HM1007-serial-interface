@@ -1,7 +1,7 @@
-# Serial interface for Hameg HM1007
+# PC interface for Hameg HM1007 & HM205-3
 ## Introduction
-This repository contains all the needed code to get the data from a HAMEG HM1007 oscilloscope. The core of this interface is an Arduino Nano which is used to communicate with the oscilloscope via it's Hameg interface (a 26-pin connector).
-
+The aim of this project is to provide an easy way to read the data from a Hameg HM1007 & HM205-3 oscilloscope. On the one hand, this is done by using an Arduino Nano for interfacing with the oscilloscope via it's Hameg interface (a 26-pin connector on the back of the oscilloscope). The Arduino provides a serial connection for the PC, via which all data from the oscilloscope can be read out. On the other hand, this repository also includes a Python program for visualizing the received data and storing it in various formats.
+> **Although the project has been extended to include support for the HM205-3 recently, the focus remains on the HM1007. Therefore, it's implementation is only limited and not all features have been adapted yet.**
 ## Serial interface
 ### Flashing the Arduino
 Altough the code for the microcontroller was written in *PlatformIO* copying the content of `PlatformIO/src/main.cpp` into an instance of the *Arduino IDE* is also possible.
@@ -9,13 +9,14 @@ Altough the code for the microcontroller was written in *PlatformIO* copying the
 Due to the usage of the same processor for the Arduino Uno and Nano it is also possible to compile and upload the program to both of these two boards without any modification to the code. 
 
 ### Wiring Diagram
-TODO (can also be found in the sourcecode of the C code `PlatformIO/src/main.cpp` )
+![Wiring Diagram](Pictures/Wiring_Diagram.png?raw=true "wiring diagram of arduino interface")
 ### Features
-- Automatically detect whether oscilloscope is in XY or normal operation mode
-- Reset Single-Shot Trigger and transmit data when signal is fully captured
 - Only transmits valid data (channel must be shown on oscilloscope's screen to be valid)
+- Automatically detect whether oscilloscope is in XY or normal operation mode (HM1007 only)
+- Reset Single-Shot trigger and transmit data when signal is fully captured (HM1007 only)
 
-### How it works
+
+### How it works (HM1007)
 The memory of the scope contains four 2048 byte long data blocks. One for each of the 4 channels (*CH1,CH2,REF1,REF2*) which regardless of the validness of the data must be read out entirely each time data is read from the oscilloscope.
 #### normal operation mode
 Sending a 'R' to the serial port opened by the Arduino starts the data read-out process, which is described in more detail below.
@@ -47,11 +48,9 @@ Although it's not necessary to know how the microcontroller gets all the data fr
 
 ![Alt text](Pictures/Hameg_Interface_with_cable.png?raw=true "Serial interface with case and cables")
 ## Python GUI
-This repository also includes a python program which can be used, to not only visualize the data from the scope, but also store it in a variety of formats.
-> **This section of this README is still under development!**
 
 ### Selecting a COM port or loading raw data files
-First you need to select the serial port of the Arduino acting as the interface to the oscilloscope from the drop down menu. Alternative you can click *File -> Import Raw Data* to load the data from a previously saved raw log.
+First you need to select the serial port of the Arduino acting as the interface to the oscilloscope from the drop down menu. Alternative you can click *File -> Import Raw Data* to load the data from a previously saved raw log ).
 
 ![Python GUI](Pictures/Software/Empty_Interface.png?raw=true "python program with no data loaded")
 
