@@ -29,18 +29,19 @@ Although it's not necessary to know how the microcontroller gets all the data fr
 
 > **All the following pin operations are handled by the Arduino itself and do not require any interaction from the user!**
 
-| Step | Pin Operation                      | Info                                               |
-|------|------------------------------------|----------------------------------------------------|
-| 1    | Set SQR to HIGH                    | Request service from scope                         |
-| 2    | Check TE until it´s pulled LOW     | HM1007 indicates ready to transmit                 |
-| 3    | Check X-Y                          | If LOW -> scope in X-Y mode -> skip step 4         |
-| 4    | Capture HB0 to HB7                 | Datalines show baseline position shift (REF. -Pos) |
-| 5    | Pull CLRAC to LOW for a short time | Reset address counter                              |
-| 6    | Set CLKAC to High                  | count address counter up once                      |
-| 7    | Set CLKAC to LOW                   | Falling edge of CLKAC does not do anything         |
-| 8    | Capture HB0 to HB7                 | Datalines show data of byte 0                      |
-| 9    | CLKAC to High, CLKAC to LOW        | Repeat step 6 to 8 for 8191 times                  |
-| 10   | Set SQR back to LOW                | HM1007 returns into normal operation mode          |
+| Step | Pin Operation                      | Info                                                    |
+|------|------------------------------------|----------------------------------------------------     |
+| 1    | Capture HB0 to HB7                 | read scope id                                           |
+| 2    | Set SQR to HIGH                    | Request service from scope                              |
+| 3    | Check TE until it´s pulled LOW     | scope indicates ready to transmit (HM1007 only)         |
+| 4    | Check X-Y                          | If LOW -> scope in XY mode -> skip step 4 (HM007 only) |
+| 5    | Capture HB0 to HB7                 | Datalines show baseline position shift (REF. -Pos)      |
+| 6    | Pull CLRAC to LOW for a short time | Reset address counter                                   |
+| 7    | Set CLKAC to High                  | count address counter up once                           |
+| 8    | Set CLKAC to LOW                   | Falling edge of CLKAC does not do anything              |
+| 9    | Capture HB0 to HB7                 | Datalines show data of byte 0                           |
+| 10    | CLKAC to High, CLKAC to LOW       | Repeat step 7 to 9 for 8191 times                       |
+| 11   | Set SQR back to LOW                | scope returns into normal operation mode                |
 ### Pictures
 | | |
 | --- | --- | 
