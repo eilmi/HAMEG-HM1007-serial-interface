@@ -103,10 +103,10 @@ def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
 
         # convert before created data array into 4 numpy arrays each containing one channel of oscilloscope
         time_data = np.arange(horizontalresolution) * timeres
-        ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(np.int) - offsets[0]) * resolutions[0]
-        ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(np.int) - offsets[1]) * resolutions[1]
-        ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(np.int) - offsets[2]) * resolutions[2]
-        ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(np.int) - offsets[3])* resolutions[3]
+        ch1_data = (np.array(data[begin_CH1 + 1:begin_CH2]).astype(int) - offsets[0]) * resolutions[0]
+        ch2_data = (np.array(data[begin_CH2 + 1:begin_Ref1]).astype(int) - offsets[1]) * resolutions[1]
+        ref1_data = (np.array(data[begin_Ref1 + 1:begin_Ref2]).astype(int) - offsets[2]) * resolutions[2]
+        ref2_data = (np.array(data[begin_Ref2 + 1:]).astype(int) - offsets[3])* resolutions[3]
 
         
     elif (oscilloscopemodel=="HM205-3"):
@@ -117,12 +117,12 @@ def createpandasframe(data, timeres=1, resolutions=[],offsets=[]):
         ref2_data=[]
         try:
             begin_CH1 = data.index("CH1")
-            ch1_data = (np.array(data[begin_CH1 + 1:begin_CH1+2049]).astype(np.int) - offsets[0]) * resolutions[0]
+            ch1_data = (np.array(data[begin_CH1 + 1:begin_CH1+2049]).astype(int) - offsets[0]) * resolutions[0]
         except ValueError:
             pass
         try:
             begin_CH2 = data.index("CH2")
-            ch2_data = (np.array(data[begin_CH2 + 1:begin_CH2+2049]).astype(np.int) - offsets[1]) * resolutions[1]
+            ch2_data = (np.array(data[begin_CH2 + 1:begin_CH2+2049]).astype(int) - offsets[1]) * resolutions[1]
         except ValueError:
             pass
     else:
